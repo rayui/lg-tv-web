@@ -1,10 +1,14 @@
+import * as dotenv from "dotenv";
 import express from "express";
 import axios from "axios";
 const LGTV = require("lgtv-serial");
 
-const SERVER_PORT = 3001;
-const HDMI_ROUTER_URI = "http://hdmi/cgi-bin/instr";
-const TV_SERIAL_DEVICE = "/dev/ttyUSB0";
+dotenv.config();
+const { env } = process;
+
+const SERVER_PORT = env.API_PORT || 3001;
+const HDMI_ROUTER_URI = env.HDMI_ROUTER_URI || "http://hdmi/cgi-bin/instr";
+const TV_SERIAL_DEVICE = env.TV_SERIAL_DEVICE || "/dev/ttyUSB0";
 
 type VideoRouterCommand = {
   input: number;
@@ -12,7 +16,7 @@ type VideoRouterCommand = {
 };
 
 type TVCommand = {
-  command: string;
+  commandId: string;
   value: number;
 };
 
@@ -30,7 +34,7 @@ const routeVideo = (command: VideoRouterCommand) => {
 };
 
 const tvControl = (tv: any, command: TVCommand) => {
-  return tv.set(command.command, command.value);
+  return tv.set(command.commandId, command.value);
 };
 
 const lgtv = new LGTV(TV_SERIAL_DEVICE);
@@ -44,8 +48,8 @@ app.post("/switch", (req, res) => {
     .then((response) => {
       res.json(response.data);
     })
-    .catch(() => {
-      res.status(500).end();
+    .catch((err: Error) => {
+      res.status(500).end(err);
     });
 });
 
@@ -54,8 +58,8 @@ app.post("/tv", (req, res) => {
     .then((response: string) => {
       res.json(response);
     })
-    .catch(() => {
-      res.status(500).end();
+    .catch((err: Error) => {
+      res.status(500).end(err);
     });
 });
 
