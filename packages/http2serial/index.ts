@@ -4,6 +4,7 @@ const LGTV = require("lgtv-serial");
 
 const SERVER_PORT = 3001;
 const HDMI_ROUTER_URI = "http://hdmi/cgi-bin/instr";
+const TV_SERIAL_DEVICE = "/dev/ttyUSB0";
 
 type VideoRouterCommand = {
   input: number;
@@ -32,7 +33,7 @@ const tvControl = (tv: any, command: TVCommand) => {
   return tv.set(command.command, command.value);
 };
 
-const lgtv = new LGTV("/dev/ttyUSB0");
+const lgtv = new LGTV(TV_SERIAL_DEVICE);
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
