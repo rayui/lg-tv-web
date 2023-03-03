@@ -33,7 +33,7 @@ const routeVideo = (command: VideoRouterCommand) => {
   });
 };
 
-const tvControl = (tv: any, command: TVCommand) => {
+const tvControl = (tv: any, command: TVCommand): Promise<any> => {
   return tv.set(command.commandId, command.value);
 };
 
@@ -43,23 +43,23 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.post("/switch", (req, res) => {
-  routeVideo(req.body)
+app.post("/switch", async (req, res) => {
+  await routeVideo(req.body)
     .then((response) => {
       res.json(response.data);
     })
     .catch((err: Error) => {
-      res.status(500).end(err);
+      res.status(500).end(err.message);
     });
 });
 
-app.post("/tv", (req, res) => {
-  tvControl(lgtv, req.body)
+app.post("/tv", async (req, res) => {
+  await tvControl(lgtv, req.body)
     .then((response: string) => {
       res.json(response);
     })
     .catch((err: Error) => {
-      res.status(500).end(err);
+      res.status(500).end(err.message);
     });
 });
 

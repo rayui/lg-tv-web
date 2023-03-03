@@ -1,5 +1,12 @@
 {
   "dependencies": {
     "dotenv": "^16.0.3"
-  }
+  },
+  "scripts": {
+    "start": "yarn workspaces run start"
+  },
+  "private": true,
+  "workspaces": [
+    "packages/http2serial"
+  ]
 }
