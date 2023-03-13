@@ -1,7 +1,7 @@
 FROM node:lts-bullseye-slim
 
 ARG API_PORT=3000
-ARG HDMI_ROUTER_URI="http://hdmi/cgi-bin/instr"
+ARG HDMI_ROUTER_URI="http://192.168.1.6/cgi-bin/instr"
 ARG TV_SERIAL_DEVICE="/dev/ttyUSB0"
 
 ENV API_PORT=$API_PORT
