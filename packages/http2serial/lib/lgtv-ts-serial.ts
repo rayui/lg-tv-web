@@ -52,9 +52,12 @@ export class LGTV {
     });
   }
 
+  resetBuffer() {
+    this.buffer = Buffer.alloc(1024);
+  }
+
   readBuffer() {
     const data = Buffer.from(this.buffer).toString();
-    this.buffer = Buffer.alloc(1024);
     return data;
   }
 
@@ -65,6 +68,7 @@ export class LGTV {
           reject(err);
           return;
         }
+        this.resetBuffer();
         this.serialPort.drain(() => {
           resolve(this.readBuffer());
         });
@@ -125,7 +129,7 @@ export class LGTV {
       return await this.send(line).then((response) => {
         return this.processTVResponse(response);
       });
-    return null;
+    throw new Error(`Unknown command ${command}`);
   }
   async get(command: string, tvID: TVId = null) {
     if (!_commands.hasOwnProperty(command)) {

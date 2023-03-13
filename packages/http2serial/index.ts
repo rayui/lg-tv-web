@@ -1,58 +1,61 @@
 import * as dotenv from "dotenv";
 import express from "express";
-import axios from "axios";
-import { LGTV } from "./lib/lgtv-ts-serial";
+import { TV, HDMISwitch } from "./lib";
+
+type Executor = (
+  state: string
+) => Promise<TV.LGTVResult | HDMISwitch.HDMISwitchResult>;
 
 dotenv.config();
 const { env } = process;
 
 const SERVER_PORT = env.API_PORT || 3000;
-const HDMI_ROUTER_URI = env.HDMI_ROUTER_URI || "http://hdmi/cgi-bin/instr";
-const TV_SERIAL_DEVICE = env.TV_SERIAL_DEVICE || "/dev/ttyUSB0";
 
-type VideoRouterCommand = {
-  input: number;
-  output: number;
-};
-
-const routeVideo = (command: VideoRouterCommand) => {
-  const data = JSON.stringify({
-    comhead: "video switch",
-    source: [command.input, command.output],
-  });
-
-  return axios({
-    method: "post",
-    url: HDMI_ROUTER_URI,
-    data: data,
-  });
-};
-
-const lgtv = new LGTV(TV_SERIAL_DEVICE);
-const app = express();
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-app.post("/switch", async (req, res) => {
-  await routeVideo(req.body)
-    .then((response) => {
-      res.json(response.data);
-    })
-    .catch((err: Error) => {
-      res.status(500).end(err.message);
-    });
-});
-
-app.post("/tv", async (req, res) => {
-  await lgtv
-    .set(req.body.commandId, req.body.value)
+const execute = (fn: Executor, val: string, res: any) => {
+  return fn(val)
     .then((result) => {
       res.json(result);
     })
     .catch((err: Error) => {
       res.status(500).end(err.message);
     });
+};
+
+const app = express();
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.post("/switch/1", async (req, res) => {
+  await execute(HDMISwitch.routeVideoOutput1, req.body, res);
+});
+
+app.post("/switch/2", async (req, res) => {
+  await execute(HDMISwitch.routeVideoOutput2, req.body, res);
+});
+
+app.post("/tv/power", async (req, res) => {
+  await execute(TV.power, req.body, res);
+});
+
+app.post("/tv/volume", async (req, res) => {
+  await execute(TV.volume, req.body, res);
+});
+
+app.post("/tv/input", async (req, res) => {
+  await execute(TV.input, req.body, res);
+});
+
+app.post("/tv/energy", async (req, res) => {
+  await execute(TV.energy, req.body, res);
+});
+
+app.post("/tv/vol-mute", async (req, res) => {
+  await execute(TV.volMute, req.body, res);
+});
+
+app.post("/tv/screen-mute", async (req, res) => {
+  await execute(TV.screenMute, req.body, res);
 });
 
 app.listen(SERVER_PORT, () => {
