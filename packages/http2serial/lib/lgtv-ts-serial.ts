@@ -93,7 +93,6 @@ export class LGTV {
   }
   async set(command: CommandId, value: CommandValue, tvID = null) {
     if (!_commands.hasOwnProperty(command)) {
-      console.log(`Unknown command ${command}`);
       throw new Error(`Unknown command ${command}`);
     }
 
@@ -131,7 +130,6 @@ export class LGTV {
   }
   async get(command: string, tvID: TVId = null) {
     if (!_commands.hasOwnProperty(command)) {
-      console.log(`Unknown command ${command}`);
       throw new Error(`Unknown command ${command}`);
     }
 
