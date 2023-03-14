@@ -27,15 +27,14 @@ RUN rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 COPY package.json /app
-COPY . /app
+COPY --chown=user:users . /app
+
+USER user
 
 RUN npm_config_build_from_source=true yarn install
 RUN yarn build
 
 EXPOSE $API_PORT
-USER user
-
-RUN chown -R user:users /app
 
 CMD yarn start
 
