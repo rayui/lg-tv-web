@@ -3,7 +3,8 @@
     "dotenv": "^16.0.3"
   },
   "scripts": {
-    "start": "yarn workspaces run start"
+    "start": "yarn workspaces run start",
+    "build": "yarn workspaces run build"
   },
   "private": true,
   "workspaces": [

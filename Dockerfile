@@ -21,6 +21,7 @@ WORKDIR /app
 
 COPY package.json /app
 RUN npm_config_build_from_source=true yarn install
+RUN yarn build
 COPY --chown=user:users . /app
 
 EXPOSE $API_PORT

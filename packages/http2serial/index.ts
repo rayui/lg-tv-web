@@ -23,12 +23,13 @@ const execute = (fn: Executor, val: string, res: any) => {
 
 const app = express();
 app.use(express.text());
+app.use(express.static("../client/build"));
 
-app.post("/switch/1", async (req, res) => {
+app.post("/switch/lounge", async (req, res) => {
   await execute(HDMISwitch.routeVideoOutput1, req.body, res);
 });
 
-app.post("/switch/2", async (req, res) => {
+app.post("/switch/office", async (req, res) => {
   await execute(HDMISwitch.routeVideoOutput2, req.body, res);
 });
 
