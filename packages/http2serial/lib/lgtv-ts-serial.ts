@@ -8,6 +8,8 @@ const enum CommandValueType {
   null = "NULL",
 }
 
+const RESPONSE_LINE_DELIM = "x";
+
 type Commands = { [index: string]: string[] };
 type CommandId = string;
 type CommandValue = boolean | number | null;
@@ -43,20 +45,12 @@ const _commands: Commands = {
 export class LGTV {
   serialPort: SerialPort;
   parser: ReadlineParser;
-  buffer: string = "";
 
   constructor(path: string) {
     this.serialPort = new SerialPort({ path: path, baudRate: 9600 });
     this.parser = this.serialPort.pipe(
-      new ReadlineParser({ delimiter: "\r\n" })
+      new ReadlineParser({ delimiter: RESPONSE_LINE_DELIM })
     );
-    this.parser.on("data", (data) => {
-      this.buffer = String.prototype.concat(this.buffer, data);
-    });
-  }
-
-  resetBuffer() {
-    this.buffer = "";
   }
 
   send(str: string) {
@@ -66,10 +60,10 @@ export class LGTV {
           reject(err);
           return;
         }
-        this.serialPort.drain(() => {
-          resolve(this.buffer);
-          this.resetBuffer();
+        this.parser.once("data", (data) => {
+          resolve(data);
         });
+        this.serialPort.drain();
       });
     });
   }
@@ -81,8 +75,7 @@ export class LGTV {
     return String(int_tvID);
   }
   processTVResponse(response: string) {
-    // a 01 OK01x
-    const regex = /. \d+ (..)(.*)x/;
+    const regex = /. \d+ (..)(.*)/;
 
     const found = response.match(regex);
     if (found) {

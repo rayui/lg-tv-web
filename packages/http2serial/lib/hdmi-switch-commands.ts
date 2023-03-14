@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import axios, { AxiosResponse } from "axios";
+import axios, { Axios, AxiosResponse } from "axios";
 
 export type HDMISwitchResult = {
   status: string;
@@ -17,21 +17,26 @@ const constructCommand = (input: string, output: number) => {
   });
 };
 
+const decodeResult = (response: AxiosResponse<any, any>) => {
+  const { status, data } = response;
+  return {
+    status: status === 200 ? "OK" : "NG",
+    result: data.result,
+  };
+};
+
 export const routeVideoOutput1 = async (
   state: string
 ): Promise<HDMISwitchResult> => {
   const input = constructCommand(state, 1);
 
-  const { data, status } = await axios({
+  const response = await axios({
     method: "post",
     url: HDMI_ROUTER_URI,
     data: input,
   });
 
-  return {
-    status: status + "",
-    result: data,
-  };
+  return decodeResult(response);
 };
 
 export const routeVideoOutput2 = async (
@@ -39,14 +44,11 @@ export const routeVideoOutput2 = async (
 ): Promise<HDMISwitchResult> => {
   const input = constructCommand(state, 2);
 
-  const { data, status } = await axios({
+  const response = await axios({
     method: "post",
     url: HDMI_ROUTER_URI,
     data: input,
   });
 
-  return {
-    status: status + "",
-    result: data,
-  };
+  return decodeResult(response);
 };
