@@ -42,23 +42,21 @@ const _commands: Commands = {
 
 export class LGTV {
   serialPort: SerialPort;
-  buffer: Buffer;
+  parser: ReadlineParser;
+  buffer: string = "";
 
   constructor(path: string) {
-    this.buffer = Buffer.alloc(1024);
     this.serialPort = new SerialPort({ path: path, baudRate: 9600 });
-    this.serialPort.on("data", (data) => {
-      this.buffer = Buffer.concat([this.buffer, data]);
+    this.parser = this.serialPort.pipe(
+      new ReadlineParser({ delimiter: "\r\n" })
+    );
+    this.parser.on("data", (data) => {
+      this.buffer = String.prototype.concat(this.buffer, data);
     });
   }
 
   resetBuffer() {
-    this.buffer = Buffer.alloc(1024);
-  }
-
-  readBuffer() {
-    const data = Buffer.from(this.buffer).toString();
-    return data;
+    this.buffer = "";
   }
 
   send(str: string) {
@@ -68,9 +66,9 @@ export class LGTV {
           reject(err);
           return;
         }
-        this.resetBuffer();
         this.serialPort.drain(() => {
-          resolve(this.readBuffer());
+          resolve(this.buffer);
+          this.resetBuffer();
         });
       });
     });

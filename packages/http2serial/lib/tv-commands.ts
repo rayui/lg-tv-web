@@ -31,7 +31,7 @@ export const power = async (state: string): Promise<LGTVResult> => {
 };
 
 export const volume = async (state: string): Promise<LGTVResult> => {
-  return lgtv.set("volume", validateNumber(state));
+  return lgtv.set("volume_control", validateNumber(state));
 };
 
 export const energy = async (state: string): Promise<LGTVResult> => {
@@ -39,7 +39,7 @@ export const energy = async (state: string): Promise<LGTVResult> => {
 };
 
 export const input = async (state: string): Promise<LGTVResult> => {
-  return lgtv.set("volume", validateNumber(state));
+  return lgtv.set("input", validateNumber(state));
 };
 
 export const volMute = async (state: string): Promise<LGTVResult> => {
