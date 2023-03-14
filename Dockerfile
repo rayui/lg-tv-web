@@ -15,17 +15,27 @@ RUN echo "TV_SERIAL_DEVICE=${TV_SERIAL_DEVICE}"
 ARG uid
 RUN useradd -m --uid $uid -g users -G dialout user
 
-RUN apt update && apt install -y libnode72 && rm -rf /var/lib/apt/lists/*
+RUN apt update -y
+RUN apt install curl -y
+
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+
+RUN apt update -y
+RUN apt install -y nodejs gcc g++ make
+RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY package.json /app
+COPY . /app
+
 RUN npm_config_build_from_source=true yarn install
 RUN yarn build
-COPY --chown=user:users . /app
 
 EXPOSE $API_PORT
 USER user
+
+RUN chown -R user:users /app
 
 CMD yarn start
 
