@@ -105,7 +105,7 @@ export class LGTV {
       }
       line = `${c[0]}${c[1]} ${this.tvID(tvID)} ${v}`;
     } else if (c[2] === CommandValueType.number) {
-      line = `${c[0]}${c[1]} ${this.tvID(tvID)} ${value}`;
+      line = `${c[0]}${c[1]} ${this.tvID(tvID)} ${value?.toString(16)}`;
     } else {
       if (c[0] === "aspect_ratio") {
       } else if (c[0] === "auto") {

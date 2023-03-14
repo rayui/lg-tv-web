@@ -13,14 +13,14 @@ const enum DeviceName {
 }
 
 const enum Command {
-  "power",
-  "volume",
-  "input",
-  "energy",
-  "vol-mute",
-  "screen-mute",
-  "lounge",
-  "office",
+  POWER = "power",
+  VOLUME = "volume",
+  INPUT = "input",
+  ENERGY = "energy",
+  VOL_MUTE = "vol-mute",
+  SCR_MUTE = "screen-mute",
+  LOUNGE = "lounge",
+  OFFICE = "office",
 }
 
 const constructURI = (device: DeviceName, command: Command) => {
@@ -43,19 +43,19 @@ const sendControlRequest = async (
 };
 
 const switchLoungeInput1 = async (event: React.MouseEvent<HTMLDivElement>) => {
-  return await sendControlRequest(DeviceName.HDMI_SWITCH, Command.lounge, "1");
+  return await sendControlRequest(DeviceName.HDMI_SWITCH, Command.LOUNGE, "1");
 };
 
 const switchLoungeInput2 = async (event: React.MouseEvent<HTMLDivElement>) => {
-  return await sendControlRequest(DeviceName.HDMI_SWITCH, Command.lounge, "2");
+  return await sendControlRequest(DeviceName.HDMI_SWITCH, Command.LOUNGE, "2");
 };
 
 const tvPowerOn = async (event: React.MouseEvent<HTMLDivElement>) => {
-  return await sendControlRequest(DeviceName.TV, Command.power, "1");
+  return await sendControlRequest(DeviceName.TV, Command.POWER, "1");
 };
 
 const tvPowerOff = async (event: React.MouseEvent<HTMLDivElement>) => {
-  return await sendControlRequest(DeviceName.TV, Command.power, "0");
+  return await sendControlRequest(DeviceName.TV, Command.POWER, "0");
 };
 
 const Button = ({ title, callback }: ButtonProps) => {
