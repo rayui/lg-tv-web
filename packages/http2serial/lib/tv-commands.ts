@@ -4,7 +4,7 @@ import { LGTV } from "./lgtv-ts-serial";
 export type LGTVResult = {
   status: string;
   result: string;
-} | null;
+};
 
 const INVALID_STATE_MESSAGE = "Invalid state";
 

@@ -22,8 +22,7 @@ const execute = (fn: Executor, val: string, res: any) => {
 };
 
 const app = express();
-
-app.use(express.urlencoded({ extended: true }));
+app.use(express.text());
 
 app.post("/switch/1", async (req, res) => {
   await execute(HDMISwitch.routeVideoOutput1, req.body, res);
