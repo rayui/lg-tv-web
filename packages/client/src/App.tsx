@@ -1,11 +1,21 @@
 import React, { MouseEventHandler } from "react";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import {
+  TopAppBar,
+  TopAppBarFixedAdjust,
+  TopAppBarRow,
+  TopAppBarSection,
+  TopAppBarTitle,
+} from "@rmwc/top-app-bar";
+import { Switch } from "@rmwc/switch";
 import axios from "axios";
-import "./App.css";
 
-interface ButtonProps {
-  title: string;
-  callback: MouseEventHandler<HTMLDivElement>;
-}
+import "./App.css";
+import "@fontsource/roboto/500.css";
+import "@rmwc/top-app-bar/styles";
+import "@rmwc/switch/styles";
+import { Button, ButtonGroup, Typography } from "@mui/material";
 
 const enum DeviceName {
   TV = "tv",
@@ -42,43 +52,58 @@ const sendControlRequest = async (
   return response.data;
 };
 
-const switchLoungeInput1 = async (event: React.MouseEvent<HTMLDivElement>) => {
-  return await sendControlRequest(DeviceName.HDMI_SWITCH, Command.LOUNGE, "1");
+const switchLoungeInput1 = async (
+  event: React.MouseEvent<HTMLAnchorElement>
+) => {
+  await sendControlRequest(DeviceName.HDMI_SWITCH, Command.LOUNGE, "1");
 };
 
-const switchLoungeInput2 = async (event: React.MouseEvent<HTMLDivElement>) => {
-  return await sendControlRequest(DeviceName.HDMI_SWITCH, Command.LOUNGE, "2");
-};
-
-const tvPowerOn = async (event: React.MouseEvent<HTMLDivElement>) => {
-  return await sendControlRequest(DeviceName.TV, Command.POWER, "1");
-};
-
-const tvPowerOff = async (event: React.MouseEvent<HTMLDivElement>) => {
-  return await sendControlRequest(DeviceName.TV, Command.POWER, "0");
-};
-
-const Button = ({ title, callback }: ButtonProps) => {
-  return (
-    <div onClick={callback}>
-      <p>{title}</p>
-    </div>
-  );
+const switchLoungeInput2 = async (
+  event: React.MouseEvent<HTMLAnchorElement>
+) => {
+  await sendControlRequest(DeviceName.HDMI_SWITCH, Command.LOUNGE, "2");
 };
 
 function App() {
+  const [tvPowerState, settvPowerState] = React.useState(false);
+
+  const tvPowerToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.currentTarget.checked) {
+      await sendControlRequest(DeviceName.TV, Command.POWER, "1");
+      settvPowerState(true);
+    } else {
+      await sendControlRequest(DeviceName.TV, Command.POWER, "0");
+      settvPowerState(false);
+    }
+  };
+
   return (
-    <div className="App">
-      <section id="switch">
-        <Button title="Chromecast" callback={switchLoungeInput1} />
-        <Button title="Lounge computer" callback={switchLoungeInput2} />
-      </section>
-      <section id="tv">
-        <Button title="TV on" callback={tvPowerOn} />
-        <Button title="TV off" callback={tvPowerOff} />
-      </section>
-      <section id="tv"></section>
-    </div>
+    <Container>
+      <TopAppBar>
+        <TopAppBarRow>
+          <TopAppBarSection>
+            <Box>
+              <Typography variant="button" sx={{ mr: 2 }}>
+                Power
+              </Typography>
+              <Switch onChange={tvPowerToggle} />
+            </Box>
+          </TopAppBarSection>
+        </TopAppBarRow>
+      </TopAppBar>
+      <TopAppBarFixedAdjust />
+      <Box>
+        <ButtonGroup variant="text" aria-label="text button group">
+          <Button onClick={switchLoungeInput1} href="#">
+            Chromecast
+          </Button>
+          <Button onClick={switchLoungeInput2} href="#">
+            Lounge Computer
+          </Button>
+        </ButtonGroup>
+      </Box>
+      <Box id="tv"></Box>
+    </Container>
   );
 }
 
