@@ -86,7 +86,7 @@ function App() {
               <Typography variant="button" sx={{ mr: 2 }}>
                 Power
               </Typography>
-              <Switch onChange={tvPowerToggle} />
+              <Switch onChange={tvPowerToggle} checked={tvPowerState} />
             </Box>
           </TopAppBarSection>
         </TopAppBarRow>
