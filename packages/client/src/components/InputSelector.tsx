@@ -26,7 +26,7 @@ export const InputSelector = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ ml: 4 }}>
       <ButtonGroup variant="text" aria-label="text button group">
         <Button onClick={switchLoungeInput1} href="#">
           Chromecast

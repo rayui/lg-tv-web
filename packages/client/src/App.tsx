@@ -1,10 +1,15 @@
 import { Container } from "@mui/material";
 
-import { TopBar, TVPowerSwitch, InputSelector } from "./components";
+import {
+  TopBar,
+  TVPowerSwitch,
+  InputSelector,
+  VolumeControl,
+} from "./components";
 
 function App() {
   return (
-    <Container>
+    <Container disableGutters sx={{ p: 0 }}>
       <TopBar
         contents={
           <>
@@ -13,6 +18,7 @@ function App() {
         }
       />
       <InputSelector />
+      <VolumeControl />
     </Container>
   );
 }

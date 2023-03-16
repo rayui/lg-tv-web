@@ -27,7 +27,7 @@ export const TVPowerSwitch = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ ml: 4 }}>
       <Typography variant="button" sx={{ mr: 2 }}>
         Power
       </Typography>
