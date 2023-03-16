@@ -6,24 +6,15 @@ import "@rmwc/switch/styles";
 import { Client } from "../lib";
 
 export const TVPowerSwitch = () => {
-  const [tvPowerState, settvPowerState] = React.useState(false);
+  const [powerState, setPowerState] = React.useState(false);
 
-  const tvPowerToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.currentTarget.checked) {
-      await Client.sendControlRequest(
-        Client.DeviceName.TV,
-        Client.Command.POWER,
-        "1"
-      );
-      settvPowerState(true);
-    } else {
-      await Client.sendControlRequest(
-        Client.DeviceName.TV,
-        Client.Command.POWER,
-        "0"
-      );
-      settvPowerState(false);
-    }
+  const powerToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    Client.sendControlRequest(
+      Client.DeviceName.TV,
+      Client.Command.POWER,
+      !powerState ? "1" : "0"
+    );
+    setPowerState(!powerState);
   };
 
   return (
@@ -31,7 +22,7 @@ export const TVPowerSwitch = () => {
       <Typography variant="button" sx={{ mr: 2 }}>
         Power
       </Typography>
-      <Switch onChange={tvPowerToggle} checked={tvPowerState} />
+      <Switch onChange={powerToggle} checked={powerState} />
     </Box>
   );
 };

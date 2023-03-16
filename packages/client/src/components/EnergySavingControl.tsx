@@ -5,17 +5,20 @@ import "@rmwc/switch/styles";
 
 import { Client } from "../lib";
 
-export const VolumeControl = () => {
-  const [volume, setVolume] = React.useState(0);
-  const [volumeMuted, setVolumeMuted] = React.useState(false);
+export const EnergySavingControl = () => {
+  const [energySaving, setenergySaving] = React.useState(0);
+  const [screenMuted, setScreenMuted] = React.useState(false);
 
-  const volumeChange = async (event: Event, newValue: number | number[]) => {
+  const energySavingChange = async (
+    event: Event,
+    newValue: number | number[]
+  ) => {
     Client.sendControlRequest(
       Client.DeviceName.TV,
-      Client.Command.VOLUME,
+      Client.Command.ENERGY,
       `${newValue as number}`
     );
-    setVolume(newValue as number);
+    setenergySaving(newValue as number);
   };
 
   const volumeMuteToggle = async (
@@ -23,27 +26,27 @@ export const VolumeControl = () => {
   ) => {
     Client.sendControlRequest(
       Client.DeviceName.TV,
-      Client.Command.VOL_MUTE,
-      !volumeMuted ? "1" : "0"
+      Client.Command.SCR_MUTE,
+      !screenMuted ? "1" : "0"
     );
 
-    setVolumeMuted(!volumeMuted);
+    setScreenMuted(!screenMuted);
   };
 
   return (
     <Box sx={{ ml: 5 }}>
-      <Switch onChange={volumeMuteToggle} checked={volumeMuted} />
+      <Switch onChange={volumeMuteToggle} checked={screenMuted} />
       <Typography variant="button" sx={{ mr: 2 }}>
-        Volume {volume}
+        Energy saving {energySaving}
       </Typography>
       <Box sx={{ ml: 2 }}>
         <Slider
           sx={{ width: `80%` }}
           min={0}
-          max={100}
+          max={3}
           step={1}
-          value={volume}
-          onChange={volumeChange}
+          value={energySaving}
+          onChange={energySavingChange}
         />
       </Box>
     </Box>

@@ -5,6 +5,7 @@ import {
   TVPowerSwitch,
   InputSelector,
   VolumeControl,
+  EnergySavingControl,
 } from "./components";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
       />
       <InputSelector />
       <VolumeControl />
+      <EnergySavingControl />
     </Container>
   );
 }
