@@ -8,15 +8,13 @@ import { Client } from "../lib";
 export const VolumeControl = () => {
   const [tvVolume, settvVolume] = React.useState(0);
 
-  const tvVolumeChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(event.currentTarget.value, 10);
-
+  const tvVolumeChange = async (event: Event, newValue: number | number[]) => {
     await Client.sendControlRequest(
       Client.DeviceName.TV,
       Client.Command.VOLUME,
-      `${value}`
+      `${newValue as number}`
     );
-    settvVolume(value);
+    settvVolume(newValue as number);
   };
 
   return (
@@ -31,7 +29,7 @@ export const VolumeControl = () => {
           max={100}
           step={1}
           value={tvVolume}
-          onInput={tvVolumeChange}
+          onChange={tvVolumeChange}
         />
       </Box>
     </Box>
