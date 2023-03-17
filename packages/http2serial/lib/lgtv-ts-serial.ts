@@ -5,7 +5,7 @@ const BAUD_RATE = 9600;
 const GET_BYTE = "FF";
 const RESPONSE_LINE_DELIM = "x";
 const TRUE_BYTE = "01";
-const FALSE_BYTE = "01";
+const FALSE_BYTE = "00";
 const LINE_END = "\r";
 
 type Commands = { [index: string]: any[] };
