@@ -1,5 +1,7 @@
 import axios from "axios";
 
+const FIELD_SEPARATOR = String.fromCharCode(0x20); //space
+
 export const enum DeviceName {
   TV = "tv",
   HDMI_SWITCH = "switch",
@@ -23,14 +25,19 @@ const constructURI = (device: DeviceName, command: Command) => {
 export const sendControlRequest = async (
   device: DeviceName,
   command: Command,
-  value: string
+  value: string,
+  qualifier?: string
 ) => {
   const uri = constructURI(device, command);
-  const response = await axios.post(uri, value, {
-    headers: {
-      "Content-Type": "text/plain",
-    },
-  });
+  const response = await axios.post(
+    uri,
+    qualifier ? [value, qualifier].join(FIELD_SEPARATOR) : value,
+    {
+      headers: {
+        "Content-Type": "text/plain",
+      },
+    }
+  );
 
   return response.data;
 };

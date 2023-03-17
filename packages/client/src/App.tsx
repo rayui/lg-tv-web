@@ -3,7 +3,8 @@ import { Container } from "@mui/material";
 import {
   TopBar,
   TVPowerSwitch,
-  InputSelector,
+  HDMISwitchInputSelector,
+  TVInputSelector,
   VolumeControl,
   EnergySavingControl,
 } from "./components";
@@ -18,7 +19,8 @@ function App() {
           </>
         }
       />
-      <InputSelector />
+      <HDMISwitchInputSelector />
+      <TVInputSelector />
       <VolumeControl />
       <EnergySavingControl />
     </Container>

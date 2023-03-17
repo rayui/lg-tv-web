@@ -112,7 +112,6 @@ export class LGTV {
         line = `${c[0]}${c[1]} ${this.tvID(tvID)} 01`;
       } else if (c[0] === "tune") {
       } else if (c[0] === "key") {
-      } else if (c[0] === "input") {
       }
     }
     if (line)

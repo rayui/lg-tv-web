@@ -4,7 +4,7 @@ import "@rmwc/switch/styles";
 
 import { Client } from "../lib";
 
-export const InputSelector = () => {
+export const HDMISwitchInputSelector = () => {
   const switchLoungeInput1 = async (
     event: React.MouseEvent<HTMLAnchorElement>
   ) => {

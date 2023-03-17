@@ -43,7 +43,7 @@ export const EnergySavingControl = () => {
         <Slider
           sx={{ width: `80%` }}
           min={0}
-          max={3}
+          max={4}
           step={1}
           value={energySaving}
           onChange={energySavingChange}

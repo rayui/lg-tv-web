@@ -6,6 +6,7 @@ export type LGTVResult = {
   result: string;
 };
 
+const FIELD_SEPARATOR = String.fromCharCode(0x20); //space
 const INVALID_STATE_MESSAGE = "Invalid state";
 
 dotenv.config();
@@ -17,6 +18,17 @@ const validateNumber = (state: string) => {
   const inputState = parseInt(state, 10);
   if (isNaN(inputState)) throw new Error(INVALID_STATE_MESSAGE);
   return inputState;
+};
+
+const validateHighAndLowByte = (state: string) => {
+  const [highByte, lowByte] = state
+    .split(FIELD_SEPARATOR)
+    .map((value) => parseInt(value, 10));
+
+  if (isNaN(highByte)) throw new Error(INVALID_STATE_MESSAGE);
+  if (isNaN(lowByte)) throw new Error(INVALID_STATE_MESSAGE);
+
+  return highByte << (4 + lowByte);
 };
 
 const validateBoolean = (state: string) => {
@@ -39,7 +51,7 @@ export const energy = async (state: string): Promise<LGTVResult> => {
 };
 
 export const input = async (state: string): Promise<LGTVResult> => {
-  return lgtv.set("input", validateNumber(state));
+  return lgtv.set("input", validateHighAndLowByte(state));
 };
 
 export const volMute = async (state: string): Promise<LGTVResult> => {

@@ -1,5 +1,6 @@
 export * from "./TopBar";
 export * from "./TVPowerSwitch";
-export * from "./InputSelector";
+export * from "./HDMISwitchInputSelector";
 export * from "./VolumeControl";
 export * from "./EnergySavingControl";
+export * from "./TVInputSelector";
