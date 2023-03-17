@@ -1,45 +1,91 @@
 import { SerialPort, ReadlineParser } from "serialport";
 
-const DEFAULT_ID = 1;
-
-const enum CommandValueType {
-  boolean = "BOOL",
-  number = "NUMBER",
-  null = "NULL",
-}
-
+const DEFAULT_TV_ID = "00";
+const BAUD_RATE = 9600;
+const GET_BYTE = "FF";
 const RESPONSE_LINE_DELIM = "x";
+const TRUE_BYTE = "01";
+const FALSE_BYTE = "01";
+const LINE_END = "\r";
 
-type Commands = { [index: string]: string[] };
+type Commands = { [index: string]: any[] };
 type CommandId = string;
 type CommandValue = boolean | number | null;
 
 type TVId = number | null;
 
+const getTVID = (tvID: TVId) => {
+  return tvID ? tvID.toString(16) : DEFAULT_TV_ID;
+};
+
+const createLineBoolean = (
+  tv: TVId,
+  command: CommandId,
+  value: boolean
+): string => {
+  const c = _commands[command];
+
+  return `${c[0]}${c[1]} ${getTVID(tv)} ${value ? TRUE_BYTE : FALSE_BYTE}`;
+};
+
+const createLineNumber = (
+  tv: TVId,
+  command: CommandId,
+  value: number
+): string => {
+  const c = _commands[command];
+  return `${c[0]}${c[1]} ${getTVID(tv)} ${value.toString(16)}`;
+};
+
+const createLineNull = (tv: TVId, command: CommandId, _value: any): string => {
+  const c = _commands[command];
+  if (command === "auto") {
+    return `${c[0]}${c[1]} ${getTVID(tv)} ${TRUE_BYTE}`;
+  }
+
+  //aspect ratio
+  //tune
+  //key
+  //etc
+
+  return "";
+};
+
+const processTVResponse = (response: string) => {
+  const regex = /. \d+ (..)(.*)/;
+
+  const found = response.match(regex);
+  if (found) {
+    return { status: found[1], result: found[2] };
+  } else {
+    throw new Error(`Unexpected Response [${response}]`);
+  }
+};
+
 const _commands: Commands = {
-  power: ["k", "a", CommandValueType.boolean],
-  aspect_ratio: ["k", "c", CommandValueType.null],
-  screen_mute: ["k", "d", CommandValueType.boolean],
-  volume_mute: ["k", "e", CommandValueType.boolean],
-  volume_control: ["k", "f", CommandValueType.number],
-  contrast: ["k", "g", CommandValueType.number],
-  brightness: ["k", "h", CommandValueType.number],
-  colour: ["k", "i", CommandValueType.number],
-  tint: ["k", "j", CommandValueType.number],
-  sharpness: ["k", "k", CommandValueType.number],
-  osd: ["k", "l", CommandValueType.boolean],
-  remote: ["k", "m", CommandValueType.boolean],
-  treble: ["k", "r", CommandValueType.number],
-  bass: ["k", "s", CommandValueType.number],
-  balance: ["k", "t", CommandValueType.number],
-  temperature: ["x", "u", CommandValueType.number],
-  energy: ["j", "q", CommandValueType.number],
-  auto: ["j", "u", CommandValueType.null],
-  tune: ["m", "a", CommandValueType.null],
-  programme: ["m", "b", CommandValueType.boolean],
-  key: ["m", "c", CommandValueType.null],
-  backlight: ["m", "g", CommandValueType.number],
-  input: ["x", "b", CommandValueType.number],
+  power: ["k", "a", createLineBoolean],
+  aspect_ratio: ["k", "c", createLineNull],
+  screen_mute: ["k", "d", createLineBoolean],
+  volume_mute: ["k", "e", createLineBoolean],
+  volume_control: ["k", "f", createLineNumber],
+  contrast: ["k", "g", createLineNumber],
+  brightness: ["k", "h", createLineNumber],
+  colour: ["k", "i", createLineNumber],
+  tint: ["k", "j", createLineNumber],
+  sharpness: ["k", "k", createLineNumber],
+  osd: ["k", "l", createLineBoolean],
+  remote: ["k", "m", createLineBoolean],
+  treble: ["k", "r", createLineNumber],
+  bass: ["k", "s", createLineNumber],
+  balance: ["k", "t", createLineNumber],
+  temperature: ["x", "u", createLineNumber],
+  energy: ["j", "q", createLineNumber],
+  auto: ["j", "u", createLineNull],
+  tune: ["m", "a", createLineNull],
+  programme: ["m", "b", createLineBoolean],
+  key: ["m", "c", createLineNull],
+  backlight: ["m", "g", createLineNumber],
+  input: ["x", "b", createLineNumber],
 };
 
 export class LGTV {
@@ -47,7 +93,7 @@ export class LGTV {
   parser: ReadlineParser;
 
   constructor(path: string) {
-    this.serialPort = new SerialPort({ path: path, baudRate: 9600 });
+    this.serialPort = new SerialPort({ path: path, baudRate: BAUD_RATE });
     this.parser = this.serialPort.pipe(
       new ReadlineParser({ delimiter: RESPONSE_LINE_DELIM })
     );
@@ -55,7 +101,7 @@ export class LGTV {
 
   send(str: string) {
     return new Promise<string>((resolve: Function, reject: Function) => {
-      this.serialPort.write(str + "\r", (err: Error | null | undefined) => {
+      this.serialPort.write(str + LINE_END, (err: Error | null | undefined) => {
         if (err) {
           reject(err);
           return;
@@ -67,73 +113,31 @@ export class LGTV {
       });
     });
   }
-  tvID(tvID: TVId) {
-    const int_tvID = tvID ? tvID : DEFAULT_ID;
-    if (String(int_tvID).length === 1) {
-      return "0" + String(int_tvID);
-    }
-    return String(int_tvID);
-  }
-  processTVResponse(response: string) {
-    const regex = /. \d+ (..)(.*)/;
 
-    const found = response.match(regex);
-    if (found) {
-      return { status: found[1], result: found[2] };
-    } else {
-      throw new Error(`Unexpected Response [${response}]`);
-    }
-  }
-  async set(command: CommandId, value: CommandValue, tvID = null) {
+  set(command: CommandId, value: CommandValue, tvID: TVId = null) {
     if (!_commands.hasOwnProperty(command)) {
       throw new Error(`Unknown command ${command}`);
     }
 
-    const c = _commands[command];
-    let line: string | null = null;
+    const line = _commands[command][2](tvID, command, value);
 
-    if (c[2] === CommandValueType.boolean) {
-      let v: string | null = null;
-      if (typeof value === "boolean") {
-        v = value ? "01" : "00";
-      } else if (typeof value === "number") {
-        v = value === 0 ? "00" : "01";
-      } else {
-        throw new Error(
-          `Cannot convert type from [${typeof value}] for [${command}]`
-        );
-      }
-      line = `${c[0]}${c[1]} ${this.tvID(tvID)} ${v}`;
-    } else if (c[2] === CommandValueType.number) {
-      line = `${c[0]}${c[1]} ${this.tvID(tvID)} ${value?.toString(16)}`;
-    } else {
-      if (c[0] === "aspect_ratio") {
-      } else if (c[0] === "auto") {
-        line = `${c[0]}${c[1]} ${this.tvID(tvID)} 01`;
-      } else if (c[0] === "tune") {
-      } else if (c[0] === "key") {
-      }
-    }
     if (line)
-      return await this.send(line).then((response) => {
-        return this.processTVResponse(response);
+      return this.send(line).then((response) => {
+        return processTVResponse(response);
       });
-    throw new Error(`Unknown command ${command}`);
+
+    throw new Error(`Invalid command and value ${command} ${value}`);
   }
-  async get(command: string, tvID: TVId = null) {
+
+  get(command: string, tvID: TVId = null) {
     if (!_commands.hasOwnProperty(command)) {
       throw new Error(`Unknown command ${command}`);
     }
 
-    const c = _commands[command];
-    let line: string | null = null;
-    if (c[2] === CommandValueType.boolean) {
-      line = `${c[0]}${c[1]} ${this.tvID(tvID)} FF`;
-    }
+    const line = _commands[command][2](tvID, command, GET_BYTE);
 
-    if (line)
-      return await this.send(line).then((response) => {
-        return this.processTVResponse(response);
-      });
+    return this.send(line).then((response) => {
+      return processTVResponse(response);
+    });
   }
 }
