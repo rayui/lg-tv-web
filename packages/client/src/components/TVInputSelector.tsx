@@ -34,6 +34,9 @@ export const TVInputSelector = () => {
         <Button onClick={switchInput(6)} href="#">
           RGB
         </Button>
+      </ButtonGroup>
+      <br />
+      <ButtonGroup variant="text" aria-label="text button group">
         <Button onClick={switchInput(7, 0)} href="#">
           HDMI 1
         </Button>
