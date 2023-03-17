@@ -20,15 +20,15 @@ const validateNumber = (state: string) => {
   return inputState;
 };
 
-const validateHighAndLowByte = (state: string) => {
-  const [highByte, lowByte] = state
+const validateHighAndLowWords = (state: string) => {
+  const [highWord, lowWord] = state
     .split(FIELD_SEPARATOR)
     .map((value) => parseInt(value, 10));
 
-  if (isNaN(highByte)) throw new Error(INVALID_STATE_MESSAGE);
-  if (isNaN(lowByte)) throw new Error(INVALID_STATE_MESSAGE);
+  if (isNaN(highWord)) throw new Error(INVALID_STATE_MESSAGE);
+  if (isNaN(lowWord)) throw new Error(INVALID_STATE_MESSAGE);
 
-  return highByte << (4 + lowByte);
+  return (highWord << 4) + lowWord;
 };
 
 const validateBoolean = (state: string) => {
@@ -51,7 +51,7 @@ export const energy = async (state: string): Promise<LGTVResult> => {
 };
 
 export const input = async (state: string): Promise<LGTVResult> => {
-  return lgtv.set("input", validateHighAndLowByte(state));
+  return lgtv.set("input", validateHighAndLowWords(state));
 };
 
 export const volMute = async (state: string): Promise<LGTVResult> => {

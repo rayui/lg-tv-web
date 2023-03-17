@@ -5,13 +5,13 @@ import "@rmwc/switch/styles";
 import { Client } from "../lib";
 
 export const TVInputSelector = () => {
-  const switchInput = (input: number) => {
+  const switchInput = (input: number, port: number = 0) => {
     return async (event: React.MouseEvent<HTMLAnchorElement>) => {
       await Client.sendControlRequest(
         Client.DeviceName.TV,
         Client.Command.INPUT,
         `${input}`,
-        "0"
+        `${port}`
       );
     };
   };
@@ -34,16 +34,16 @@ export const TVInputSelector = () => {
         <Button onClick={switchInput(6)} href="#">
           RGB
         </Button>
-        <Button onClick={switchInput(7)} href="#">
+        <Button onClick={switchInput(7, 0)} href="#">
           HDMI 1
         </Button>
-        <Button onClick={switchInput(8)} href="#">
+        <Button onClick={switchInput(7, 1)} href="#">
           HDMI 2
         </Button>
-        <Button onClick={switchInput(9)} href="#">
+        <Button onClick={switchInput(7, 2)} href="#">
           HDMI 3
         </Button>
-        <Button onClick={switchInput(10)} href="#">
+        <Button onClick={switchInput(7, 3)} href="#">
           HDMI 4
         </Button>
       </ButtonGroup>
