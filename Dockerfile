@@ -29,7 +29,7 @@ WORKDIR /app
 COPY package.json .
 COPY yarn.lock .
 COPY . .
-RUN npm_config_build_from_source=true yarn install
+RUN yarn install
 RUN yarn build
 
 COPY --chown=user:users . /app
