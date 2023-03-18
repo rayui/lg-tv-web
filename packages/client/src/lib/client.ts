@@ -41,3 +41,17 @@ export const sendControlRequest = async (
 
   return response.data;
 };
+
+export const getControlRequest = async (
+  device: DeviceName,
+  command: Command
+) => {
+  const uri = constructURI(device, command);
+  const response = await axios.get(uri, {
+    headers: {
+      "Content-Type": "text/plain",
+    },
+  });
+
+  return response.data;
+};

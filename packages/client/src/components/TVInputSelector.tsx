@@ -1,54 +1,68 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, ButtonGroup, Button } from "@mui/material";
 import "@rmwc/switch/styles";
 
 import { Client } from "../lib";
 
-export const TVInputSelector = () => {
-  const switchInput = (input: number, port: number = 0) => {
-    return async (event: React.MouseEvent<HTMLAnchorElement>) => {
-      await Client.sendControlRequest(
-        Client.DeviceName.TV,
-        Client.Command.INPUT,
-        `${input}`,
-        `${port}`
-      );
-    };
+const availableInputs = [
+  ["DTV", 0, 0],
+  ["Analogue", 1, 0],
+  ["AV", 2, 0],
+  ["Component", 4, 0],
+  ["RGB", 6, 0],
+  ["HDMI 1", 9, 0],
+  ["HDMI 2", 9, 1],
+  ["HDMI 3", 9, 2],
+  ["HDMI 4", 9, 3],
+];
+
+const switchInput = (input: number, port: number = 0) => {
+  return async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    await Client.sendControlRequest(
+      Client.DeviceName.TV,
+      Client.Command.INPUT,
+      `${input}`,
+      `${port}`
+    );
   };
+};
+
+const getSelectedInput = () => {
+  return Client.getControlRequest(Client.DeviceName.TV, Client.Command.INPUT);
+};
+
+export const TVInputSelector = () => {
+  const [selectedInput, setSelectedInput] = useState(0);
+
+  useEffect(() => {
+    getSelectedInput()
+      .then(({ result }) => {
+        setSelectedInput(parseInt(result, 16));
+      })
+      .catch((err) => {
+        throw new Error("Cannot get selected input");
+      });
+  }, []);
 
   return (
     <Box sx={{ ml: 4 }}>
       <ButtonGroup variant="text" aria-label="text button group">
-        <Button onClick={switchInput(0)} href="#">
-          DTV
-        </Button>
-        <Button onClick={switchInput(1)} href="#">
-          Analogue
-        </Button>
-        <Button onClick={switchInput(2)} href="#">
-          AV
-        </Button>
-        <Button onClick={switchInput(4)} href="#">
-          Component
-        </Button>
-        <Button onClick={switchInput(6)} href="#">
-          RGB
-        </Button>
-      </ButtonGroup>
-      <br />
-      <ButtonGroup variant="text" aria-label="text button group">
-        <Button onClick={switchInput(7, 0)} href="#">
-          HDMI 1
-        </Button>
-        <Button onClick={switchInput(7, 1)} href="#">
-          HDMI 2
-        </Button>
-        <Button onClick={switchInput(7, 2)} href="#">
-          HDMI 3
-        </Button>
-        <Button onClick={switchInput(7, 3)} href="#">
-          HDMI 4
-        </Button>
+        {availableInputs.map((availableInput) => {
+          const input = availableInput[1] as number;
+          const port = availableInput[2] as number;
+          const variant =
+            input * 10 + port === selectedInput ? "contained" : "outlined";
+
+          return (
+            <Button
+              onClick={switchInput(input, port)}
+              href="#"
+              variant={variant}
+            >
+              {availableInput[0]}
+            </Button>
+          );
+        })}
       </ButtonGroup>
     </Box>
   );

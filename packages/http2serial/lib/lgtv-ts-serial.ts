@@ -101,14 +101,14 @@ export class LGTV {
 
   send(str: string) {
     return new Promise<string>((resolve: Function, reject: Function) => {
+      this.parser.once("data", (data) => {
+        resolve(data);
+      });
       this.serialPort.write(str + LINE_END, (err: Error | null | undefined) => {
         if (err) {
           reject(err);
           return;
         }
-        this.parser.once("data", (data) => {
-          resolve(data);
-        });
         this.serialPort.drain();
       });
     });
