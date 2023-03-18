@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Typography, Box } from "@mui/material";
 import { Switch } from "@rmwc/switch";
 import "@rmwc/switch/styles";
@@ -13,9 +13,24 @@ export const TVPowerSwitch = () => {
       Client.DeviceName.TV,
       Client.Command.POWER,
       !powerState ? "1" : "0"
-    );
-    setPowerState(!powerState);
+    )
+      .then(({ result }) => {
+        setPowerState(result === "01" ? true : false);
+      })
+      .catch((err) => {
+        throw new Error("Cannot set selected input");
+      });
   };
+
+  useEffect(() => {
+    Client.getControlRequest(Client.DeviceName.TV, Client.Command.POWER)
+      .then(({ result }) => {
+        setPowerState(result === "01" ? true : false);
+      })
+      .catch((err) => {
+        throw new Error("Cannot get selected input");
+      });
+  }, []);
 
   return (
     <Box sx={{ ml: 4 }}>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Typography, Box, Switch } from "@mui/material";
 import { Slider } from "@mui/material";
 import "@rmwc/switch/styles";
@@ -14,8 +14,13 @@ export const VolumeControl = () => {
       Client.DeviceName.TV,
       Client.Command.VOLUME,
       `${newValue as number}`
-    );
-    setVolume(newValue as number);
+    )
+      .then(({ result }) => {
+        setVolume(parseInt(result, 16));
+      })
+      .catch((err) => {
+        throw new Error("Cannot set selected input");
+      });
   };
 
   const volumeMuteToggle = async (
@@ -25,10 +30,32 @@ export const VolumeControl = () => {
       Client.DeviceName.TV,
       Client.Command.VOL_MUTE,
       !volumeMuted ? "1" : "0"
-    );
-
-    setVolumeMuted(!volumeMuted);
+    )
+      .then(({ result }) => {
+        setVolumeMuted(result === "01" ? true : false);
+      })
+      .catch((err) => {
+        throw new Error("Cannot set selected input");
+      });
   };
+
+  useEffect(() => {
+    Client.getControlRequest(Client.DeviceName.TV, Client.Command.VOLUME)
+      .then(({ result }) => {
+        setVolume(parseInt(result, 16));
+      })
+      .catch((err) => {
+        throw new Error("Cannot get selected input");
+      });
+
+    Client.getControlRequest(Client.DeviceName.TV, Client.Command.VOL_MUTE)
+      .then(({ result }) => {
+        setVolumeMuted(result === "01" ? true : false);
+      })
+      .catch((err) => {
+        throw new Error("Cannot get selected input");
+      });
+  }, []);
 
   return (
     <Box sx={{ ml: 5 }}>
