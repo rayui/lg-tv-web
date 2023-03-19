@@ -36,6 +36,21 @@ export const TVInputSelector = () => {
     };
   };
 
+  const createButtons = (availableInput: string[]) => {
+    const variant =
+      availableInput[1] === selectedInput ? "contained" : "outlined";
+
+    return (
+      <Button
+        onClick={switchInput(availableInput[1])}
+        href="#"
+        variant={variant}
+      >
+        {availableInput[0]}
+      </Button>
+    );
+  };
+
   useEffect(() => {
     Client.getControlRequest(Client.DeviceName.TV, Client.Command.INPUT)
       .then(({ result }) => {
@@ -49,20 +64,10 @@ export const TVInputSelector = () => {
   return (
     <Box sx={{ ml: 4 }}>
       <ButtonGroup variant="text" aria-label="text button group">
-        {availableInputs.map((availableInput) => {
-          const variant =
-            availableInput[1] === selectedInput ? "contained" : "outlined";
-
-          return (
-            <Button
-              onClick={switchInput(availableInput[1])}
-              href="#"
-              variant={variant}
-            >
-              {availableInput[0]}
-            </Button>
-          );
-        })}
+        {availableInputs.slice(0, 4).map(createButtons)}
+      </ButtonGroup>
+      <ButtonGroup variant="text" aria-label="text button group">
+        {availableInputs.slice(5).map(createButtons)}
       </ButtonGroup>
     </Box>
   );
