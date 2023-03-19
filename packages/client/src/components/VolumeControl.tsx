@@ -57,7 +57,9 @@ export const VolumeControl = () => {
 
   return (
     <Box sx={{ ml: 5 }}>
-      <Switch onChange={volumeMuteToggle} checked={volumeMuted} />
+      {/* LG made the mute control work in reverse for some reason
+        Just flip it on the client side for now */}
+      <Switch onChange={volumeMuteToggle} checked={!volumeMuted} />
       <Typography variant="button" sx={{ mr: 2 }}>
         Volume {volume}
       </Typography>

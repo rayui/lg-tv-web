@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Typography, Box, Switch } from "@mui/material";
 import { Slider } from "@mui/material";
 import "@rmwc/switch/styles";
@@ -17,25 +17,50 @@ export const EnergySavingControl = () => {
       Client.DeviceName.TV,
       Client.Command.ENERGY,
       `${newValue as number}`
-    );
+    ).catch((err) => {
+      throw new Error("Cannot set energy saving");
+    });
+
     setenergySaving(newValue as number);
   };
 
-  const volumeMuteToggle = async (
+  const screenMuteToggle = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     Client.sendControlRequest(
       Client.DeviceName.TV,
       Client.Command.SCR_MUTE,
       !screenMuted ? "1" : "0"
-    );
-
-    setScreenMuted(!screenMuted);
+    )
+      .then(({ result }) => {
+        setScreenMuted(result === "01" ? true : false);
+      })
+      .catch((err) => {
+        throw new Error("Cannot set screen mute");
+      });
   };
+
+  useEffect(() => {
+    Client.getControlRequest(Client.DeviceName.TV, Client.Command.ENERGY)
+      .then(({ result }) => {
+        setenergySaving(parseInt(result, 16));
+      })
+      .catch((err) => {
+        throw new Error("Cannot get energy saving");
+      });
+
+    Client.getControlRequest(Client.DeviceName.TV, Client.Command.SCR_MUTE)
+      .then(({ result }) => {
+        setScreenMuted(result === "01" ? true : false);
+      })
+      .catch((err) => {
+        throw new Error("Cannot get screen mute");
+      });
+  }, []);
 
   return (
     <Box sx={{ ml: 5 }}>
-      <Switch onChange={volumeMuteToggle} checked={screenMuted} />
+      <Switch onChange={screenMuteToggle} checked={screenMuted} />
       <Typography variant="button" sx={{ mr: 2 }}>
         Energy saving {energySaving}
       </Typography>
