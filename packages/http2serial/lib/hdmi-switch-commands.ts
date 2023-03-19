@@ -52,3 +52,20 @@ export const routeVideoOutput2 = async (
 
   return decodeResult(response);
 };
+
+export const getVideoRouting = async (
+  state: string
+): Promise<HDMISwitchResult> => {
+  const input = constructCommand(state, 2);
+
+  const response = await axios({
+    method: "post",
+    url: HDMI_ROUTER_URI,
+    data: { comhead: "get video status" },
+  });
+
+  return {
+    status: response.status === 200 ? "OK" : "NG",
+    result: response.data.allsource,
+  };
+};

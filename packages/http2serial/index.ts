@@ -25,12 +25,8 @@ const app = express();
 app.use(express.text());
 app.use(express.static("../client/build"));
 
-app.get("/switch/lounge", (req, res) => {
-  execute(HDMISwitch.routeVideoOutput1, req.body, res);
-});
-
-app.get("/switch/office", (req, res) => {
-  execute(HDMISwitch.routeVideoOutput2, req.body, res);
+app.get("/switch/routing", (req, res) => {
+  execute(HDMISwitch.getVideoRouting, req.body, res);
 });
 
 app.get("/tv/power", (req, res) => {

@@ -14,13 +14,11 @@ export const VolumeControl = () => {
       Client.DeviceName.TV,
       Client.Command.VOLUME,
       `${newValue as number}`
-    )
-      .then(({ result }) => {
-        setVolume(parseInt(result, 16));
-      })
-      .catch((err) => {
-        throw new Error("Cannot set selected input");
-      });
+    ).catch((err) => {
+      throw new Error("Cannot set volume");
+    });
+
+    setVolume(newValue as number);
   };
 
   const volumeMuteToggle = async (
@@ -35,7 +33,7 @@ export const VolumeControl = () => {
         setVolumeMuted(result === "01" ? true : false);
       })
       .catch((err) => {
-        throw new Error("Cannot set selected input");
+        throw new Error("Cannot set volume mute");
       });
   };
 
@@ -45,7 +43,7 @@ export const VolumeControl = () => {
         setVolume(parseInt(result, 16));
       })
       .catch((err) => {
-        throw new Error("Cannot get selected input");
+        throw new Error("Cannot get volume");
       });
 
     Client.getControlRequest(Client.DeviceName.TV, Client.Command.VOL_MUTE)
@@ -53,7 +51,7 @@ export const VolumeControl = () => {
         setVolumeMuted(result === "01" ? true : false);
       })
       .catch((err) => {
-        throw new Error("Cannot get selected input");
+        throw new Error("Cannot get volume mute");
       });
   }, []);
 
