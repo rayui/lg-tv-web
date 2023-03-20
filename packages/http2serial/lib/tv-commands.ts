@@ -1,232 +1,205 @@
 import * as dotenv from "dotenv";
-import { LGTV } from "./lgtv-ts-serial";
+import { LGTV, CNM } from "./lgtv-ts-serial";
 
 export type LGTVResult = {
   status: string;
   result: string;
 };
 
-const FIELD_SEPARATOR = String.fromCharCode(0x20); //space
-const INVALID_STATE_MESSAGE = "Invalid state";
-
 dotenv.config();
 const { env } = process;
 const TV_SERIAL_DEVICE = env.TV_SERIAL_DEVICE || "/dev/ttyUSB0";
 const lgtv = new LGTV(TV_SERIAL_DEVICE);
 
-const validateNumber = (state: string) => {
-  const inputState = parseInt(state, 10);
-  if (isNaN(inputState)) throw new Error(INVALID_STATE_MESSAGE);
-  return inputState;
-};
-
-const validateHighAndLowWords = (state: string) => {
-  const [highWord, lowWord] = state
-    .split(FIELD_SEPARATOR)
-    .map((value) => parseInt(value, 10));
-
-  if (isNaN(highWord)) throw new Error(INVALID_STATE_MESSAGE);
-  if (isNaN(lowWord)) throw new Error(INVALID_STATE_MESSAGE);
-
-  return (highWord << 4) + lowWord;
-};
-
-const validateBoolean = (state: string) => {
-  const inputState = parseInt(state, 10);
-  if (isNaN(inputState) || (inputState !== 1 && inputState !== 0))
-    throw new Error(INVALID_STATE_MESSAGE);
-  return inputState !== 0;
-};
-
 export const getPower = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("power");
+  return lgtv.get(CNM.power);
 };
 
 export const getVolume = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("volume_control");
+  return lgtv.get(CNM.volume_control);
 };
 
 export const getVolMute = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("volume_mute");
+  return lgtv.get(CNM.volume_mute);
 };
 
 export const getScreenMute = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("screen_mute");
+  return lgtv.get(CNM.screen_mute);
 };
 
 export const getAspect = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("aspect");
+  return lgtv.get(CNM.aspect_ratio);
 };
 
 export const getContrast = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("contrast");
+  return lgtv.get(CNM.contrast);
 };
 
 export const getBrightness = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("brightness");
+  return lgtv.get(CNM.brightness);
 };
 
 export const getColour = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("colour");
+  return lgtv.get(CNM.colour);
 };
 
 export const getTint = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("tint");
+  return lgtv.get(CNM.tint);
 };
 
 export const getSharpness = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("sharpness");
+  return lgtv.get(CNM.sharpness);
 };
 
 export const getOsd = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("osd");
+  return lgtv.get(CNM.osd);
 };
 
 export const getRemoteLock = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("remote");
+  return lgtv.get(CNM.remote);
 };
 
 export const getTreble = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("treble");
+  return lgtv.get(CNM.treble);
 };
 
 export const getBass = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("bass");
+  return lgtv.get(CNM.bass);
 };
 
 export const getBalance = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("balance");
+  return lgtv.get(CNM.balance);
 };
 
 export const getTemperature = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("temperature");
+  return lgtv.get(CNM.temperature);
 };
 
 export const getIsm = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("ism");
+  return lgtv.get(CNM.ism);
 };
 
 export const getEnergy = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("energy");
+  return lgtv.get(CNM.energy);
 };
 
 //tune later?
 
 export const getAuto = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("auto", null);
+  return lgtv.get(CNM.auto, null);
 };
 
 export const getProgramme = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("programme");
+  return lgtv.get(CNM.programme);
 };
 
 export const getKey = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("key");
+  return lgtv.get(CNM.key);
 };
 
 export const getBacklight = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("backlight");
+  return lgtv.get(CNM.backlight);
 };
 
 export const getInput = (state: string): Promise<LGTVResult> => {
-  return lgtv.get("input");
+  return lgtv.get(CNM.input);
 };
 
 //3d later?
 //extended 3d later?
 
 export const setPower = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("power", validateBoolean(state));
+  return lgtv.set(CNM.power, state);
 };
 
 export const setVolume = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("volume_control", validateNumber(state));
+  return lgtv.set(CNM.volume_control, state);
 };
 
 export const setVolMute = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("volume_mute", validateBoolean(state));
+  return lgtv.set(CNM.volume_mute, state);
 };
 
 export const setScreenMute = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("screen_mute", validateBoolean(state));
+  return lgtv.set(CNM.screen_mute, state);
 };
 
 export const setAspect = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("aspect", validateNumber(state));
+  return lgtv.set(CNM.aspect_ratio, state);
 };
 
 export const setContrast = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("contrast", validateNumber(state));
+  return lgtv.set(CNM.contrast, state);
 };
 
 export const setBrightness = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("brightness", validateNumber(state));
+  return lgtv.set(CNM.brightness, state);
 };
 
 export const setColour = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("colour", validateNumber(state));
+  return lgtv.set(CNM.colour, state);
 };
 
 export const setTint = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("tint", validateNumber(state));
+  return lgtv.set(CNM.tint, state);
 };
 
 export const setSharpness = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("sharpness", validateNumber(state));
+  return lgtv.set(CNM.sharpness, state);
 };
 
 export const setOsd = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("osd", validateBoolean(state));
+  return lgtv.set(CNM.osd, state);
 };
 
 export const setRemoteLock = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("remote", validateBoolean(state));
+  return lgtv.set(CNM.remote, state);
 };
 
 export const setTreble = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("treble", validateNumber(state));
+  return lgtv.set(CNM.treble, state);
 };
 
 export const setBass = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("bass", validateNumber(state));
+  return lgtv.set(CNM.bass, state);
 };
 
 export const setBalance = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("balance", validateNumber(state));
+  return lgtv.set(CNM.balance, state);
 };
 
 export const setTemperature = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("temperature", validateNumber(state));
+  return lgtv.set(CNM.temperature, state);
 };
 
 export const setIsm = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("ism", validateNumber(state));
+  return lgtv.set(CNM.ism, state);
 };
 
 export const setEnergy = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("energy", validateNumber(state));
+  return lgtv.set(CNM.energy, state);
 };
 
 //tune later?
 
 export const setAuto = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("auto", null);
+  return lgtv.set(CNM.auto, "");
 };
 
 export const setProgramme = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("programme", validateBoolean(state));
+  return lgtv.set(CNM.programme, state);
 };
 
 export const setKey = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("key", validateNumber(state));
+  return lgtv.set(CNM.key, state);
 };
 
 export const setBacklight = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("backlight", validateNumber(state));
+  return lgtv.set(CNM.backlight, state);
 };
 
 export const setInput = (state: string): Promise<LGTVResult> => {
-  return lgtv.set("input", validateHighAndLowWords(state));
+  return lgtv.set(CNM.input, state);
 };
 
 //3d later?

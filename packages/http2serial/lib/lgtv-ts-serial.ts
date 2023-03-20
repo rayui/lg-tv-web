@@ -7,40 +7,150 @@ const RESPONSE_LINE_DELIM = "x";
 const TRUE_BYTE = "01";
 const FALSE_BYTE = "00";
 const LINE_END = "\r";
+const FIELD_SEPARATOR = String.fromCharCode(0x20); //space
 
-type Commands = { [index: string]: any[] };
-type CommandId = string;
-type CommandValue = boolean | number | null;
+const INVALID_STATE_MESSAGE = "Invalid state";
+
+const enum CTYPE {
+  "BOOL",
+  "NUMBER",
+  "DBL_WORD",
+  "NULL",
+}
+
+export const enum CNM {
+  power = "power",
+  aspect_ratio = "aspect_ratio",
+  screen_mute = "screen_mute",
+  volume_mute = "volume_mute",
+  volume_control = "volume_control",
+  contrast = "contrast",
+  brightness = "brightness",
+  colour = "colour",
+  tint = "tint",
+  sharpness = "sharpness",
+  osd = "osd",
+  remote = "remote",
+  treble = "treble",
+  bass = "bass",
+  balance = "balance",
+  temperature = "temperature",
+  energy = "energy",
+  auto = "auto",
+  tune = "tune",
+  programme = "programme",
+  key = "key",
+  backlight = "backlight",
+  input = "input",
+  ism = "ism",
+}
+
+const enum CMD {
+  power = "ka",
+  aspect_ratio = "kc",
+  screen_mute = "kd",
+  volume_mute = "ke",
+  volume_control = "kf",
+  contrast = "kg",
+  brightness = "kh",
+  colour = "ki",
+  tint = "kj",
+  sharpness = "kk",
+  osd = "kl",
+  remote = "km",
+  treble = "kr",
+  bass = "ks",
+  balance = "kt",
+  temperature = "xu",
+  energy = "jq",
+  auto = "ju",
+  tune = "ma",
+  programme = "mb",
+  key = "mc",
+  backlight = "mg",
+  input = "xb",
+  ism = "jp",
+}
+
+type Command = { cmd: CMD; type: CTYPE };
+type Commands = { [key in CNM]: Command };
 
 type TVId = number | null;
+
+const commands: Commands = {
+  power: { cmd: CMD.power, type: CTYPE.BOOL },
+  aspect_ratio: { cmd: CMD.aspect_ratio, type: CTYPE.NULL },
+  screen_mute: { cmd: CMD.screen_mute, type: CTYPE.BOOL },
+  volume_mute: { cmd: CMD.volume_mute, type: CTYPE.BOOL },
+  volume_control: { cmd: CMD.volume_control, type: CTYPE.NUMBER },
+  contrast: { cmd: CMD.contrast, type: CTYPE.NUMBER },
+  brightness: { cmd: CMD.brightness, type: CTYPE.NUMBER },
+  colour: { cmd: CMD.colour, type: CTYPE.NUMBER },
+  tint: { cmd: CMD.tint, type: CTYPE.NUMBER },
+  sharpness: { cmd: CMD.sharpness, type: CTYPE.NUMBER },
+  osd: { cmd: CMD.osd, type: CTYPE.BOOL },
+  remote: { cmd: CMD.remote, type: CTYPE.BOOL },
+  treble: { cmd: CMD.treble, type: CTYPE.NUMBER },
+  bass: { cmd: CMD.bass, type: CTYPE.NUMBER },
+  balance: { cmd: CMD.balance, type: CTYPE.NUMBER },
+  temperature: { cmd: CMD.temperature, type: CTYPE.NUMBER },
+  energy: { cmd: CMD.energy, type: CTYPE.NUMBER },
+  auto: { cmd: CMD.auto, type: CTYPE.NULL },
+  tune: { cmd: CMD.tune, type: CTYPE.NULL },
+  programme: { cmd: CMD.programme, type: CTYPE.BOOL },
+  key: { cmd: CMD.key, type: CTYPE.NULL },
+  backlight: { cmd: CMD.backlight, type: CTYPE.NUMBER },
+  input: { cmd: CMD.input, type: CTYPE.NUMBER },
+  ism: { cmd: CMD.ism, type: CTYPE.NUMBER },
+};
 
 const getTVID = (tvID: TVId) => {
   return tvID ? tvID.toString(16) : DEFAULT_TV_ID;
 };
 
-const createLineBoolean = (
-  tv: TVId,
-  command: CommandId,
-  value: boolean
-): string => {
-  const c = _commands[command];
+const createLineBoolean = (tv: TVId, command: CMD, value: string): string => {
+  const validateBoolean = (state: string) => {
+    const inputState = parseInt(state, 10);
+    if (isNaN(inputState) || (inputState !== 1 && inputState !== 0))
+      throw new Error(INVALID_STATE_MESSAGE);
+    return inputState !== 0 ? TRUE_BYTE : FALSE_BYTE;
+  };
 
-  return `${c[0]}${c[1]} ${getTVID(tv)} ${value ? TRUE_BYTE : FALSE_BYTE}`;
+  return `${command} ${getTVID(tv)} ${validateBoolean(value)}`;
 };
 
-const createLineNumber = (
-  tv: TVId,
-  command: CommandId,
-  value: number
-): string => {
-  const c = _commands[command];
-  return `${c[0]}${c[1]} ${getTVID(tv)} ${value.toString(16)}`;
+const createLineNumber = (tv: TVId, command: CMD, value: string): string => {
+  const validateNumber = (state: string) => {
+    const inputState = parseInt(state, 10);
+    if (isNaN(inputState)) throw new Error(INVALID_STATE_MESSAGE);
+    return inputState.toString(16);
+  };
+
+  return `${command} ${getTVID(tv)} ${validateNumber(value)}`;
 };
 
-const createLineNull = (tv: TVId, command: CommandId, _value: any): string => {
-  const c = _commands[command];
-  if (command === "auto") {
-    return `${c[0]}${c[1]} ${getTVID(tv)} ${TRUE_BYTE}`;
+const createLineDoubleWord = (
+  tv: TVId,
+  command: CMD,
+  value: string
+): string => {
+  const validateHighAndLowWords = (state: string) => {
+    const [highWord, lowWord] = state
+      .split(FIELD_SEPARATOR)
+      .map((value) => parseInt(value, 10));
+
+    if (isNaN(highWord)) throw new Error(INVALID_STATE_MESSAGE);
+    if (isNaN(lowWord)) throw new Error(INVALID_STATE_MESSAGE);
+
+    return (highWord << 4) + lowWord;
+  };
+
+  return `${command} ${getTVID(tv)} ${validateHighAndLowWords(value)}`;
+};
+
+const createLineNull = (tv: TVId, command: CMD): string => {
+  if (command === CMD.auto) {
+    return `${command} ${getTVID(tv)} ${TRUE_BYTE}`;
   }
 
   //aspect ratio
@@ -49,6 +159,27 @@ const createLineNull = (tv: TVId, command: CommandId, _value: any): string => {
   //etc
 
   return "";
+};
+
+const createLine = (tvID: TVId, command: CNM, value: string) => {
+  const { type, cmd } = commands[command];
+  let line = "";
+
+  switch (type) {
+    case CTYPE.BOOL:
+      line = createLineBoolean(tvID, cmd, value);
+      break;
+    case CTYPE.NUMBER:
+      line = createLineNumber(tvID, cmd, value);
+      break;
+    case CTYPE.DBL_WORD:
+      line = createLineDoubleWord(tvID, cmd, value);
+      break;
+    default:
+      line = createLineNull(tvID, cmd);
+  }
+
+  return line;
 };
 
 const processTVResponse = (response: string) => {
@@ -60,32 +191,6 @@ const processTVResponse = (response: string) => {
   } else {
     throw new Error(`Unexpected Response [${response}]`);
   }
-};
-
-const _commands: Commands = {
-  power: ["k", "a", createLineBoolean],
-  aspect_ratio: ["k", "c", createLineNull],
-  screen_mute: ["k", "d", createLineBoolean],
-  volume_mute: ["k", "e", createLineBoolean],
-  volume_control: ["k", "f", createLineNumber],
-  contrast: ["k", "g", createLineNumber],
-  brightness: ["k", "h", createLineNumber],
-  colour: ["k", "i", createLineNumber],
-  tint: ["k", "j", createLineNumber],
-  sharpness: ["k", "k", createLineNumber],
-  osd: ["k", "l", createLineBoolean],
-  remote: ["k", "m", createLineBoolean],
-  treble: ["k", "r", createLineNumber],
-  bass: ["k", "s", createLineNumber],
-  balance: ["k", "t", createLineNumber],
-  temperature: ["x", "u", createLineNumber],
-  energy: ["j", "q", createLineNumber],
-  auto: ["j", "u", createLineNull],
-  tune: ["m", "a", createLineNull],
-  programme: ["m", "b", createLineBoolean],
-  key: ["m", "c", createLineNull],
-  backlight: ["m", "g", createLineNumber],
-  input: ["x", "b", createLineNumber],
 };
 
 export class LGTV {
@@ -114,12 +219,12 @@ export class LGTV {
     });
   }
 
-  set(command: CommandId, value: CommandValue, tvID: TVId = null) {
-    if (!_commands.hasOwnProperty(command)) {
+  set(command: CNM, value: string, tvID: TVId = null) {
+    if (!commands.hasOwnProperty(command)) {
       throw new Error(`Unknown command ${command}`);
     }
 
-    const line = _commands[command][2](tvID, command, value);
+    const line = createLine(tvID, command, value);
 
     if (line)
       return this.send(line).then((response) => {
@@ -129,12 +234,17 @@ export class LGTV {
     throw new Error(`Invalid command and value ${command} ${value}`);
   }
 
-  get(command: string, tvID: TVId = null) {
-    if (!_commands.hasOwnProperty(command)) {
+  get(command: CNM, tvID: TVId = null) {
+    if (!commands.hasOwnProperty(command)) {
       throw new Error(`Unknown command ${command}`);
     }
 
-    const line = _commands[command][2](tvID, command, GET_BYTE);
+    const line = createLine(tvID, command, GET_BYTE);
+
+    if (line)
+      return this.send(line).then((response) => {
+        return processTVResponse(response);
+      });
 
     return this.send(line).then((response) => {
       return processTVResponse(response);
