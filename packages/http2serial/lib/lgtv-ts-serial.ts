@@ -1,4 +1,5 @@
 import { SerialPort, ReadlineParser } from "serialport";
+import Queue from "promise-queue";
 
 const DEFAULT_TV_ID = "00";
 const BAUD_RATE = 9600;
@@ -10,6 +11,9 @@ const LINE_END = "\r";
 const FIELD_SEPARATOR = String.fromCharCode(0x20); //space
 
 const INVALID_STATE_MESSAGE = "Invalid state";
+
+const MAX_CONCURRENT = 1;
+const MAX_QUEUE = Infinity;
 
 const enum CTYPE {
   "BOOL",
@@ -196,12 +200,23 @@ const processTVResponse = (response: string) => {
 export class LGTV {
   serialPort: SerialPort;
   parser: ReadlineParser;
+  queue: Queue = new Queue(MAX_CONCURRENT, MAX_QUEUE);
 
   constructor(path: string) {
     this.serialPort = new SerialPort({ path: path, baudRate: BAUD_RATE });
     this.parser = this.serialPort.pipe(
       new ReadlineParser({ delimiter: RESPONSE_LINE_DELIM })
     );
+  }
+
+  enqueue(line: string) {
+    return this.queue
+      .add(() => {
+        return this.send(line);
+      })
+      .then((response: string) => {
+        return processTVResponse(response);
+      });
   }
 
   send(str: string) {
@@ -220,34 +235,18 @@ export class LGTV {
   }
 
   set(command: CNM, value: string, tvID: TVId = null) {
-    if (!commands.hasOwnProperty(command)) {
-      throw new Error(`Unknown command ${command}`);
-    }
-
     const line = createLine(tvID, command, value);
 
-    if (line)
-      return this.send(line).then((response) => {
-        return processTVResponse(response);
-      });
+    if (line) return this.enqueue(line);
 
     throw new Error(`Invalid command and value ${command} ${value}`);
   }
 
   get(command: CNM, tvID: TVId = null) {
-    if (!commands.hasOwnProperty(command)) {
-      throw new Error(`Unknown command ${command}`);
-    }
-
     const line = createLine(tvID, command, GET_BYTE);
 
-    if (line)
-      return this.send(line).then((response) => {
-        return processTVResponse(response);
-      });
+    if (line) return this.enqueue(line);
 
-    return this.send(line).then((response) => {
-      return processTVResponse(response);
-    });
+    throw new Error(`Invalid command ${command}`);
   }
 }
