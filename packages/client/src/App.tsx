@@ -9,7 +9,7 @@ import {
 } from "./components";
 
 function App() {
-  const [pane, setPane] = useState(Pane.TV_CONTROLS);
+  const [pane, setPane] = useState(Pane.HDMI_SWITCH);
 
   return (
     <Container disableGutters sx={{ p: 0 }}>

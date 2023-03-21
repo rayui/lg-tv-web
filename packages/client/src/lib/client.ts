@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const FIELD_SEPARATOR = String.fromCharCode(0x20); //space
+export type APIResponse = {
+  status: string;
+  result: number;
+};
 
 export const enum DeviceName {
   TV = "tv",
@@ -26,7 +29,7 @@ export const sendControlRequest = async (
   device: DeviceName,
   command: Command,
   value: string
-) => {
+): Promise<APIResponse> => {
   const uri = constructURI(device, command);
   const response = await axios.post(uri, value, {
     headers: {
@@ -40,7 +43,7 @@ export const sendControlRequest = async (
 export const getControlRequest = async (
   device: DeviceName,
   command: Command
-) => {
+): Promise<APIResponse> => {
   const uri = constructURI(device, command);
   const response = await axios.get(uri, {
     headers: {

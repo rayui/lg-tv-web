@@ -30,7 +30,7 @@ export const VolumeControl = () => {
       !volumeMuted ? "1" : "0"
     )
       .then(({ result }) => {
-        setVolumeMuted(result === "01" ? true : false);
+        setVolumeMuted(result === 1 ? true : false);
       })
       .catch((err) => {
         throw new Error("Cannot set volume mute");
@@ -40,7 +40,7 @@ export const VolumeControl = () => {
   useEffect(() => {
     Client.getControlRequest(Client.DeviceName.TV, Client.Command.VOLUME)
       .then(({ result }) => {
-        setVolume(parseInt(result, 16));
+        setVolume(result);
       })
       .catch((err) => {
         throw new Error("Cannot get volume");
@@ -48,7 +48,7 @@ export const VolumeControl = () => {
 
     Client.getControlRequest(Client.DeviceName.TV, Client.Command.VOL_MUTE)
       .then(({ result }) => {
-        setVolumeMuted(result === "01" ? true : false);
+        setVolumeMuted(result === 1 ? true : false);
       })
       .catch((err) => {
         throw new Error("Cannot get volume mute");

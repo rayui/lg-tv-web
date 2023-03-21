@@ -33,7 +33,7 @@ export const EnergySavingControl = () => {
       !screenMuted ? "1" : "0"
     )
       .then(({ result }) => {
-        setScreenMuted(result === "01" ? true : false);
+        setScreenMuted(result === 1 ? true : false);
       })
       .catch((err) => {
         throw new Error("Cannot set screen mute");
@@ -43,7 +43,7 @@ export const EnergySavingControl = () => {
   useEffect(() => {
     Client.getControlRequest(Client.DeviceName.TV, Client.Command.ENERGY)
       .then(({ result }) => {
-        setenergySaving(parseInt(result, 16));
+        setenergySaving(result);
       })
       .catch((err) => {
         throw new Error("Cannot get energy saving");
@@ -51,7 +51,7 @@ export const EnergySavingControl = () => {
 
     Client.getControlRequest(Client.DeviceName.TV, Client.Command.SCR_MUTE)
       .then(({ result }) => {
-        setScreenMuted(result === "01" ? true : false);
+        setScreenMuted(result === 1 ? true : false);
       })
       .catch((err) => {
         throw new Error("Cannot get screen mute");

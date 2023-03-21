@@ -3,7 +3,6 @@ import "@rmwc/switch/styles";
 
 import {
   TVPowerSwitch,
-  HDMISwitchInputSelector,
   TVInputSelector,
   VolumeControl,
   EnergySavingControl,
@@ -20,7 +19,7 @@ export const TVControls = () => {
       !powerState ? "1" : "0"
     )
       .then(({ result }) => {
-        setPowerState(parseInt(result, 10) === 1 ? true : false);
+        setPowerState(result === 1 ? true : false);
       })
       .catch((err) => {
         throw new Error(`Cannot set selected input. ${err}`);
@@ -30,7 +29,7 @@ export const TVControls = () => {
   useEffect(() => {
     Client.getControlRequest(Client.DeviceName.TV, Client.Command.POWER)
       .then(({ result }) => {
-        setPowerState(parseInt(result, 10) === 1 ? true : false);
+        setPowerState(result === 1 ? true : false);
       })
       .catch((err) => {
         throw new Error(`Cannot get selected input. ${err}`);
@@ -42,7 +41,6 @@ export const TVControls = () => {
       <TVPowerSwitch powerToggle={powerToggle} powerState={powerState} />
       {powerState && (
         <>
-          <HDMISwitchInputSelector />
           <TVInputSelector />
           <VolumeControl />
           <EnergySavingControl />
