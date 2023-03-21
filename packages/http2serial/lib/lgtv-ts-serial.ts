@@ -198,7 +198,9 @@ const createLine = (tvID: TVId, command: CNM, value: string) => {
 
 const send = (port: SerialPort, parser: ReadlineParser, str: string) => {
   return new Promise<string>((resolve: Function, reject: Function) => {
+    console.log(`Sending command: ${str}`);
     parser.once("data", (data) => {
+      console.log(`Received data: ${data}`);
       resolve(data);
     });
     port.write(str + LINE_END, (err: Error | null | undefined) => {
@@ -242,10 +244,13 @@ export class LGTV {
     return new Promise<LGTVResult>((resolve, reject) => {
       queue
         .add(() => {
+          console.log(`Enqueing command: ${line}`);
           return send(serialPort, parser, line);
         })
         .then((response: string) => {
-          resolve(processTVResponse(response));
+          const data = processTVResponse(response);
+          console.log(`Returning data: ${data}`);
+          resolve(data);
         })
         .catch((err) => {
           reject(err);
