@@ -110,7 +110,7 @@ const commands: Commands = {
   programme: { cmd: CMD.programme, type: CTYPE.BOOL },
   key: { cmd: CMD.key, type: CTYPE.NULL },
   backlight: { cmd: CMD.backlight, type: CTYPE.NUMBER },
-  input: { cmd: CMD.input, type: CTYPE.NUMBER },
+  input: { cmd: CMD.input, type: CTYPE.DBL_WORD },
   ism: { cmd: CMD.ism, type: CTYPE.NUMBER },
 };
 
@@ -199,21 +199,24 @@ const createLine = (tvID: TVId, command: CNM, value: string) => {
 
 const send = (port: SerialPort, parser: ReadlineParser, str: string) => {
   return new Promise<string>((resolve: Function, reject: Function) => {
-    console.log(`Sending command: ${str}`);
-    const timeout = setTimeout(() => {
-      reject(new Error(`Serial port timed out`));
-    }, TIMEOUT_LEN);
     parser.once("data", (data) => {
       clearTimeout(timeout);
       console.log(`Received data: ${data}`);
       resolve(data);
     });
+
+    const timeout = setTimeout(() => {
+      reject(new Error(`Serial port timed out`));
+    }, TIMEOUT_LEN);
+
+    console.log(`Sending command: ${str}`);
+
     port.write(str + LINE_END, (err: Error | null | undefined) => {
+      port.drain();
       if (err) {
         reject(err);
         return;
       }
-      port.drain();
     });
   });
 };
