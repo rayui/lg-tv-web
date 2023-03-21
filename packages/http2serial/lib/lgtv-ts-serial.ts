@@ -14,7 +14,7 @@ const INVALID_STATE_MESSAGE = "Invalid state";
 
 const MAX_CONCURRENT = 1;
 const MAX_QUEUE = Infinity;
-const TIMEOUT_LEN = 1000;
+const TIMEOUT_LEN = 5000;
 
 const enum CTYPE {
   "BOOL",
