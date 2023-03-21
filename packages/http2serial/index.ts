@@ -1,10 +1,10 @@
 import * as dotenv from "dotenv";
 import express from "express";
-import { TV, HDMISwitch } from "./lib";
+import { TV, HDMISwitch, Serial } from "./lib";
 
 type Executor = (
   state: string
-) => Promise<TV.LGTVResult | HDMISwitch.HDMISwitchResult>;
+) => Promise<Serial.LGTVResult | HDMISwitch.HDMISwitchResult>;
 
 dotenv.config();
 const { env } = process;
