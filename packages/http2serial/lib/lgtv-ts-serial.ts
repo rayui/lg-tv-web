@@ -14,6 +14,7 @@ const INVALID_STATE_MESSAGE = "Invalid state";
 
 const MAX_CONCURRENT = 1;
 const MAX_QUEUE = Infinity;
+const TIMEOUT_LEN = 1000;
 
 const enum CTYPE {
   "BOOL",
@@ -199,7 +200,11 @@ const createLine = (tvID: TVId, command: CNM, value: string) => {
 const send = (port: SerialPort, parser: ReadlineParser, str: string) => {
   return new Promise<string>((resolve: Function, reject: Function) => {
     console.log(`Sending command: ${str}`);
+    const timeout = setTimeout(() => {
+      reject(new Error(`Serial port timed out`));
+    }, TIMEOUT_LEN);
     parser.once("data", (data) => {
+      clearTimeout(timeout);
       console.log(`Received data: ${data}`);
       resolve(data);
     });
@@ -249,7 +254,7 @@ export class LGTV {
         })
         .then((response: string) => {
           const data = processTVResponse(response);
-          console.log(`Returning data: ${data}`);
+          console.log(`Returning data: ${JSON.stringify(data)}`);
           resolve(data);
         })
         .catch((err) => {
