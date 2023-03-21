@@ -117,6 +117,7 @@ const createLineBoolean = (tv: TVId, command: CMD, value: string): string => {
     const inputState = parseInt(state, 10);
     if (isNaN(inputState) || (inputState !== 1 && inputState !== 0))
       throw new Error(INVALID_STATE_MESSAGE);
+
     return inputState !== 0 ? TRUE_BYTE : FALSE_BYTE;
   };
 
@@ -165,6 +166,10 @@ const createLineNull = (tv: TVId, command: CMD): string => {
   return "";
 };
 
+const createLineRead = (tv: TVId, command: CNM): string => {
+  return `${command} ${getTVID(tv)} ${GET_BYTE}`;
+};
+
 const createLine = (tvID: TVId, command: CNM, value: string) => {
   const { type, cmd } = commands[command];
   let line = "";
@@ -184,6 +189,21 @@ const createLine = (tvID: TVId, command: CNM, value: string) => {
   }
 
   return line;
+};
+
+const send = (port: SerialPort, parser: ReadlineParser, str: string) => {
+  return new Promise<string>((resolve: Function, reject: Function) => {
+    parser.once("data", (data) => {
+      resolve(data);
+    });
+    port.write(str + LINE_END, (err: Error | null | undefined) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      port.drain();
+    });
+  });
 };
 
 const processTVResponse = (response: string) => {
@@ -212,26 +232,11 @@ export class LGTV {
   enqueue(line: string) {
     return this.queue
       .add(() => {
-        return this.send(line);
+        return send(this.serialPort, this.parser, line);
       })
       .then((response: string) => {
         return processTVResponse(response);
       });
-  }
-
-  send(str: string) {
-    return new Promise<string>((resolve: Function, reject: Function) => {
-      this.parser.once("data", (data) => {
-        resolve(data);
-      });
-      this.serialPort.write(str + LINE_END, (err: Error | null | undefined) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        this.serialPort.drain();
-      });
-    });
   }
 
   set(command: CNM, value: string, tvID: TVId = null) {
@@ -243,7 +248,7 @@ export class LGTV {
   }
 
   get(command: CNM, tvID: TVId = null) {
-    const line = createLine(tvID, command, GET_BYTE);
+    const line = createLineRead(tvID, command);
 
     if (line) return this.enqueue(line);
 
