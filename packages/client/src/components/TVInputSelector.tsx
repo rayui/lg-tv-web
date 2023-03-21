@@ -55,7 +55,7 @@ export const TVInputSelector = () => {
   useEffect(() => {
     Client.getControlRequest(Client.DeviceName.TV, Client.Command.INPUT)
       .then(({ result }) => {
-        setSelectedInput(parseInt(result, 16));
+        setSelectedInput(result);
       })
       .catch((err) => {
         throw new Error("Cannot get selected input");
