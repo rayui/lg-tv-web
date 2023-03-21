@@ -8,7 +8,6 @@ const RESPONSE_LINE_DELIM = "x";
 const TRUE_BYTE = "01";
 const FALSE_BYTE = "00";
 const LINE_END = "\r";
-const FIELD_SEPARATOR = String.fromCharCode(0x20); //space
 
 const INVALID_STATE_MESSAGE = "Invalid state";
 
@@ -19,8 +18,10 @@ const TIMEOUT_LEN = 5000;
 const enum CTYPE {
   "BOOL",
   "NUMBER",
-  "DBL_WORD",
-  "NULL",
+  "KEY",
+  "DOUBLE",
+  "TRIPLE",
+  "QUAD",
 }
 
 export const enum CNM {
@@ -84,12 +85,12 @@ type TVId = number | null;
 
 export type LGTVResult = {
   status: string;
-  result: string;
+  result: number;
 };
 
 const commands: Commands = {
   power: { cmd: CMD.power, type: CTYPE.BOOL },
-  aspect_ratio: { cmd: CMD.aspect_ratio, type: CTYPE.NULL },
+  aspect_ratio: { cmd: CMD.aspect_ratio, type: CTYPE.NUMBER },
   screen_mute: { cmd: CMD.screen_mute, type: CTYPE.BOOL },
   volume_mute: { cmd: CMD.volume_mute, type: CTYPE.BOOL },
   volume_control: { cmd: CMD.volume_control, type: CTYPE.NUMBER },
@@ -105,12 +106,12 @@ const commands: Commands = {
   balance: { cmd: CMD.balance, type: CTYPE.NUMBER },
   temperature: { cmd: CMD.temperature, type: CTYPE.NUMBER },
   energy: { cmd: CMD.energy, type: CTYPE.NUMBER },
-  auto: { cmd: CMD.auto, type: CTYPE.NULL },
-  tune: { cmd: CMD.tune, type: CTYPE.NULL },
+  auto: { cmd: CMD.auto, type: CTYPE.BOOL },
+  tune: { cmd: CMD.tune, type: CTYPE.TRIPLE },
   programme: { cmd: CMD.programme, type: CTYPE.BOOL },
-  key: { cmd: CMD.key, type: CTYPE.NULL },
+  key: { cmd: CMD.key, type: CTYPE.KEY },
   backlight: { cmd: CMD.backlight, type: CTYPE.NUMBER },
-  input: { cmd: CMD.input, type: CTYPE.DBL_WORD },
+  input: { cmd: CMD.input, type: CTYPE.NUMBER },
   ism: { cmd: CMD.ism, type: CTYPE.NUMBER },
 };
 
@@ -140,38 +141,6 @@ const createLineNumber = (tv: TVId, command: CMD, value: string): string => {
   return `${command} ${getTVID(tv)} ${validateNumber(value)}`;
 };
 
-const createLineDoubleWord = (
-  tv: TVId,
-  command: CMD,
-  value: string
-): string => {
-  const validateHighAndLowWords = (state: string) => {
-    const [highWord, lowWord] = state
-      .split(FIELD_SEPARATOR)
-      .map((value) => parseInt(value, 10));
-
-    if (isNaN(highWord)) throw new Error(INVALID_STATE_MESSAGE);
-    if (isNaN(lowWord)) throw new Error(INVALID_STATE_MESSAGE);
-
-    return highWord + "" + lowWord;
-  };
-
-  return `${command} ${getTVID(tv)} ${validateHighAndLowWords(value)}`;
-};
-
-const createLineNull = (tv: TVId, command: CMD): string => {
-  if (command === CMD.auto) {
-    return `${command} ${getTVID(tv)} ${TRUE_BYTE}`;
-  }
-
-  //aspect ratio
-  //tune
-  //key
-  //etc
-
-  return "";
-};
-
 const createLineRead = (tv: TVId, command: CNM): string => {
   return `${commands[command].cmd} ${getTVID(tv)} ${GET_BYTE}`;
 };
@@ -187,11 +156,6 @@ const createLine = (tvID: TVId, command: CNM, value: string) => {
     case CTYPE.NUMBER:
       line = createLineNumber(tvID, cmd, value);
       break;
-    case CTYPE.DBL_WORD:
-      line = createLineDoubleWord(tvID, cmd, value);
-      break;
-    default:
-      line = createLineNull(tvID, cmd);
   }
 
   return line;
@@ -221,12 +185,12 @@ const send = (port: SerialPort, parser: ReadlineParser, str: string) => {
   });
 };
 
-const processTVResponse = (response: string) => {
+const processTVResponse = (response: string): LGTVResult => {
   const regex = /. \d+ (..)(.*)/;
 
   const found = response.match(regex);
   if (found) {
-    return { status: found[1], result: found[2] };
+    return { status: found[1], result: parseInt(found[2], 16) };
   } else {
     throw new Error(`Unexpected Response [${response}]`);
   }

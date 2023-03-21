@@ -4,28 +4,29 @@ import "@rmwc/switch/styles";
 
 import { Client } from "../lib";
 
-const availableInputs = [
-  ["DTV", "00"],
-  ["Analogue", "10"],
-  ["AV", "20"],
-  ["Component", "40"],
-  ["RGB", "60"],
-  ["HDMI 1", "90"],
-  ["HDMI 2", "91"],
-  ["HDMI 3", "92"],
-  ["HDMI 4", "93"],
+type AvailableInput = [string, number];
+
+const availableInputs: AvailableInput[] = [
+  ["DTV", 0x0],
+  ["Analogue", 0x10],
+  ["AV", 0x20],
+  ["Component", 0x40],
+  ["RGB", 0x60],
+  ["HDMI 1", 0x90],
+  ["HDMI 2", 0x91],
+  ["HDMI 3", 0x92],
+  ["HDMI 4", 0x93],
 ];
 
 export const TVInputSelector = () => {
   const [selectedInput, setSelectedInput] = useState(availableInputs[0][1]);
 
-  const switchInput = (input: string) => {
+  const switchInput = (input: number) => {
     return async (event: React.MouseEvent<HTMLAnchorElement>) => {
       Client.sendControlRequest(
         Client.DeviceName.TV,
         Client.Command.INPUT,
-        input[0],
-        input[1]
+        input.toString(10)
       )
         .then(({ result }) => {
           setSelectedInput(result);
@@ -36,7 +37,7 @@ export const TVInputSelector = () => {
     };
   };
 
-  const createButtons = (availableInput: string[]) => {
+  const createButtons = (availableInput: AvailableInput) => {
     const variant =
       availableInput[1] === selectedInput ? "contained" : "outlined";
 
@@ -54,7 +55,7 @@ export const TVInputSelector = () => {
   useEffect(() => {
     Client.getControlRequest(Client.DeviceName.TV, Client.Command.INPUT)
       .then(({ result }) => {
-        setSelectedInput(result);
+        setSelectedInput(parseInt(result, 16));
       })
       .catch((err) => {
         throw new Error("Cannot get selected input");

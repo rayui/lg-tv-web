@@ -17,7 +17,9 @@ const execute = (fn: Executor, val: string, res: any) => {
       res.json(result);
     })
     .catch((err: Error) => {
-      res.status(500).end(err.message);
+      res.status(500).json({
+        err: err.message,
+      });
     });
 };
 
