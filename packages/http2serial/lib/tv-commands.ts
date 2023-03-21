@@ -1,10 +1,5 @@
 import * as dotenv from "dotenv";
-import { LGTV, CNM } from "./lgtv-ts-serial";
-
-export type LGTVResult = {
-  status: string;
-  result: string;
-};
+import { LGTV, CNM, LGTVResult } from "./lgtv-ts-serial";
 
 dotenv.config();
 const { env } = process;

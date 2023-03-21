@@ -81,6 +81,11 @@ type Commands = { [key in CNM]: Command };
 
 type TVId = number | null;
 
+export type LGTVResult = {
+  status: string;
+  result: string;
+};
+
 const commands: Commands = {
   power: { cmd: CMD.power, type: CTYPE.BOOL },
   aspect_ratio: { cmd: CMD.aspect_ratio, type: CTYPE.NULL },
@@ -230,13 +235,22 @@ export class LGTV {
   }
 
   enqueue(line: string) {
-    return this.queue
-      .add(() => {
-        return send(this.serialPort, this.parser, line);
-      })
-      .then((response: string) => {
-        return processTVResponse(response);
-      });
+    const queue = this.queue;
+    const serialPort = this.serialPort;
+    const parser = this.parser;
+
+    return new Promise<LGTVResult>((resolve, reject) => {
+      queue
+        .add(() => {
+          return send(serialPort, parser, line);
+        })
+        .then((response: string) => {
+          resolve(processTVResponse(response));
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
   }
 
   set(command: CNM, value: string, tvID: TVId = null) {
