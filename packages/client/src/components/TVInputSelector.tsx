@@ -64,7 +64,7 @@ export const TVInputSelector = () => {
   return (
     <Box sx={{ ml: 4 }}>
       <ButtonGroup variant="text" aria-label="text button group">
-        {availableInputs.slice(0, 4).map(createButtons)}
+        {availableInputs.slice(0, 5).map(createButtons)}
       </ButtonGroup>
       <ButtonGroup variant="text" aria-label="text button group">
         {availableInputs.slice(5).map(createButtons)}

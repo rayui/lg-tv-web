@@ -153,7 +153,7 @@ const createLineDoubleWord = (
     if (isNaN(highWord)) throw new Error(INVALID_STATE_MESSAGE);
     if (isNaN(lowWord)) throw new Error(INVALID_STATE_MESSAGE);
 
-    return (highWord << 4) + lowWord;
+    return highWord + "" + lowWord;
   };
 
   return `${command} ${getTVID(tv)} ${validateHighAndLowWords(value)}`;
