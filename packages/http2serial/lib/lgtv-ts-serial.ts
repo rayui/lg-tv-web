@@ -172,7 +172,7 @@ const createLineNull = (tv: TVId, command: CMD): string => {
 };
 
 const createLineRead = (tv: TVId, command: CNM): string => {
-  return `${command} ${getTVID(tv)} ${GET_BYTE}`;
+  return `${commands[command].cmd} ${getTVID(tv)} ${GET_BYTE}`;
 };
 
 const createLine = (tvID: TVId, command: CNM, value: string) => {
