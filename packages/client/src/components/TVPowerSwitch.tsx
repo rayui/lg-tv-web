@@ -3,9 +3,17 @@ import { Typography, Box } from "@mui/material";
 import { Switch } from "@rmwc/switch";
 import "@rmwc/switch/styles";
 
+export const TV_EDGE_TIME = 7000;
+
+export const enum PowerState {
+  "ON",
+  "EDGE",
+  "OFF",
+}
+
 export type TVPowerSwitchProps = {
   powerToggle: ChangeEventHandler<HTMLInputElement>;
-  powerState: boolean;
+  powerState: PowerState;
 };
 
 export const TVPowerSwitch = ({
@@ -17,7 +25,7 @@ export const TVPowerSwitch = ({
       <Typography variant="button" sx={{ mr: 2 }}>
         Power
       </Typography>
-      <Switch onChange={powerToggle} checked={powerState} />
+      <Switch onChange={powerToggle} checked={powerState !== PowerState.OFF} />
     </Box>
   );
 };

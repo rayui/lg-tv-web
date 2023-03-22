@@ -19,6 +19,7 @@ export const enum Command {
   SCR_MUTE = "screen-mute",
   LOUNGE = "lounge",
   OFFICE = "office",
+  HDMI_STATUS = "status",
 }
 
 const constructURI = (device: DeviceName, command: Command) => {
@@ -28,7 +29,7 @@ const constructURI = (device: DeviceName, command: Command) => {
 export const sendControlRequest = async (
   device: DeviceName,
   command: Command,
-  value: string
+  value: number | string
 ): Promise<APIResponse> => {
   const uri = constructURI(device, command);
   const response = await axios.post(uri, value, {

@@ -3,15 +3,28 @@ import express from "express";
 import { TV, HDMISwitch, Serial } from "./lib";
 
 type Executor = (
-  state: string
+  state: any
 ) => Promise<Serial.LGTVResult | HDMISwitch.HDMISwitchResult>;
+
+interface JSONErr {
+  json: (err: { err: string }) => void;
+}
+
+interface JSONResponse<T> {
+  json: (data: T) => void;
+  status: (code: number) => JSONErr;
+}
 
 dotenv.config();
 const { env } = process;
 
-const SERVER_PORT = env.API_PORT || 3000;
+const SERVER_PORT = env.PORT || 3000;
 
-const execute = (fn: Executor, val: string, res: any) => {
+const execute = (
+  fn: Executor,
+  res: JSONResponse<Serial.LGTVResult | HDMISwitch.HDMISwitchResult>,
+  val?: any
+) => {
   return fn(val)
     .then((result) => {
       res.json(result);
@@ -27,200 +40,206 @@ const app = express();
 app.use(express.text());
 app.use(express.static("../client/build"));
 
-app.get("/switch/routing", (req, res) => {
-  execute(HDMISwitch.getVideoRouting, req.body, res);
-});
-
-app.get("/tv/power", (req, res) => {
-  execute(TV.getPower, req.body, res);
-});
-
-app.get("/tv/volume", (req, res) => {
-  execute(TV.getVolume, req.body, res);
-});
-
-app.get("/tv/vol-mute", (req, res) => {
-  execute(TV.getVolMute, req.body, res);
-});
-
-app.get("/tv/screen-mute", (req, res) => {
-  execute(TV.getScreenMute, req.body, res);
-});
-
-app.get("/tv/aspect", (req, res) => {
-  execute(TV.getAspect, req.body, res);
-});
-
-app.get("/tv/contrast", (req, res) => {
-  execute(TV.getContrast, req.body, res);
-});
-
-app.get("/tv/brightness", (req, res) => {
-  execute(TV.getBrightness, req.body, res);
-});
-
-app.get("/tv/colour", (req, res) => {
-  execute(TV.getColour, req.body, res);
-});
-
-app.get("/tv/tint", (req, res) => {
-  execute(TV.getTint, req.body, res);
-});
-
-app.get("/tv/sharpness", (req, res) => {
-  execute(TV.getSharpness, req.body, res);
-});
-
-app.get("/tv/osd", (req, res) => {
-  execute(TV.getOsd, req.body, res);
-});
-
-app.get("/tv/lock", (req, res) => {
-  execute(TV.getRemoteLock, req.body, res);
-});
-
-app.get("/tv/treble", (req, res) => {
-  execute(TV.getTreble, req.body, res);
-});
-
-app.get("/tv/bass", (req, res) => {
-  execute(TV.getBass, req.body, res);
-});
-
-app.get("/tv/balance", (req, res) => {
-  execute(TV.getBalance, req.body, res);
-});
-
-app.get("/tv/temperature", (req, res) => {
-  execute(TV.getTemperature, req.body, res);
-});
-
-app.get("/tv/ism", (req, res) => {
-  execute(TV.getIsm, req.body, res);
-});
-
-app.get("/tv/energy", (req, res) => {
-  execute(TV.getEnergy, req.body, res);
-});
-
-app.get("/tv/auto", (req, res) => {
-  execute(TV.getAuto, req.body, res);
-});
-
-app.get("/tv/programme", (req, res) => {
-  execute(TV.getProgramme, req.body, res);
-});
-
-app.get("/tv/key", (req, res) => {
-  execute(TV.getKey, req.body, res);
-});
-
-app.get("/tv/backlight", (req, res) => {
-  execute(TV.getBacklight, req.body, res);
-});
-
-app.get("/tv/input", (req, res) => {
-  execute(TV.getInput, req.body, res);
+app.get("/switch/status", (req, res) => {
+  execute(HDMISwitch.getVideoRouting, res);
 });
 
 app.post("/switch/lounge", (req, res) => {
-  execute(HDMISwitch.routeVideoOutput1, req.body, res);
+  execute(HDMISwitch.routeVideoOutput, res, {
+    input: parseInt(req.body, 10),
+    output: 1,
+  });
 });
 
 app.post("/switch/office", (req, res) => {
-  execute(HDMISwitch.routeVideoOutput2, req.body, res);
+  execute(HDMISwitch.routeVideoOutput, res, {
+    input: parseInt(req.body, 10),
+    output: 2,
+  });
+});
+
+app.get("/tv/power", (req, res) => {
+  execute(TV.getPower, res);
+});
+
+app.get("/tv/volume", (req, res) => {
+  execute(TV.getVolume, res);
+});
+
+app.get("/tv/vol-mute", (req, res) => {
+  execute(TV.getVolMute, res);
+});
+
+app.get("/tv/screen-mute", (req, res) => {
+  execute(TV.getScreenMute, res);
+});
+
+app.get("/tv/aspect", (req, res) => {
+  execute(TV.getAspect, res);
+});
+
+app.get("/tv/contrast", (req, res) => {
+  execute(TV.getContrast, res);
+});
+
+app.get("/tv/brightness", (req, res) => {
+  execute(TV.getBrightness, res);
+});
+
+app.get("/tv/colour", (req, res) => {
+  execute(TV.getColour, res);
+});
+
+app.get("/tv/tint", (req, res) => {
+  execute(TV.getTint, res);
+});
+
+app.get("/tv/sharpness", (req, res) => {
+  execute(TV.getSharpness, res);
+});
+
+app.get("/tv/osd", (req, res) => {
+  execute(TV.getOsd, res);
+});
+
+app.get("/tv/lock", (req, res) => {
+  execute(TV.getRemoteLock, res);
+});
+
+app.get("/tv/treble", (req, res) => {
+  execute(TV.getTreble, res);
+});
+
+app.get("/tv/bass", (req, res) => {
+  execute(TV.getBass, res);
+});
+
+app.get("/tv/balance", (req, res) => {
+  execute(TV.getBalance, res);
+});
+
+app.get("/tv/temperature", (req, res) => {
+  execute(TV.getTemperature, res);
+});
+
+app.get("/tv/ism", (req, res) => {
+  execute(TV.getIsm, res);
+});
+
+app.get("/tv/energy", (req, res) => {
+  execute(TV.getEnergy, res);
+});
+
+app.get("/tv/auto", (req, res) => {
+  execute(TV.getAuto, res);
+});
+
+app.get("/tv/programme", (req, res) => {
+  execute(TV.getProgramme, res);
+});
+
+app.get("/tv/key", (req, res) => {
+  execute(TV.getKey, res);
+});
+
+app.get("/tv/backlight", (req, res) => {
+  execute(TV.getBacklight, res);
+});
+
+app.get("/tv/input", (req, res) => {
+  execute(TV.getInput, res);
 });
 
 app.post("/tv/power", (req, res) => {
-  execute(TV.setPower, req.body, res);
+  execute(TV.setPower, res, req.body);
 });
 
 app.post("/tv/volume", (req, res) => {
-  execute(TV.setVolume, req.body, res);
+  execute(TV.setVolume, res, req.body);
 });
 
 app.post("/tv/vol-mute", (req, res) => {
-  execute(TV.setVolMute, req.body, res);
+  execute(TV.setVolMute, res, req.body);
 });
 
 app.post("/tv/screen-mute", (req, res) => {
-  execute(TV.setScreenMute, req.body, res);
+  execute(TV.setScreenMute, res, req.body);
 });
 
 app.post("/tv/aspect", (req, res) => {
-  execute(TV.setAspect, req.body, res);
+  execute(TV.setAspect, res, req.body);
 });
 
 app.post("/tv/contrast", (req, res) => {
-  execute(TV.setContrast, req.body, res);
+  execute(TV.setContrast, res, req.body);
 });
 
 app.post("/tv/brightness", (req, res) => {
-  execute(TV.setBrightness, req.body, res);
+  execute(TV.setBrightness, res, req.body);
 });
 
 app.post("/tv/colour", (req, res) => {
-  execute(TV.setColour, req.body, res);
+  execute(TV.setColour, res, req.body);
 });
 
 app.post("/tv/tint", (req, res) => {
-  execute(TV.setTint, req.body, res);
+  execute(TV.setTint, res, req.body);
 });
 
 app.post("/tv/sharpness", (req, res) => {
-  execute(TV.setSharpness, req.body, res);
+  execute(TV.setSharpness, res, req.body);
 });
 
 app.post("/tv/osd", (req, res) => {
-  execute(TV.setOsd, req.body, res);
+  execute(TV.setOsd, res, req.body);
 });
 
 app.post("/tv/lock", (req, res) => {
-  execute(TV.setRemoteLock, req.body, res);
+  execute(TV.setRemoteLock, res, req.body);
 });
 
 app.post("/tv/treble", (req, res) => {
-  execute(TV.setTreble, req.body, res);
+  execute(TV.setTreble, res, req.body);
 });
 
 app.post("/tv/bass", (req, res) => {
-  execute(TV.setBass, req.body, res);
+  execute(TV.setBass, res, req.body);
 });
 
 app.post("/tv/balance", (req, res) => {
-  execute(TV.setBalance, req.body, res);
+  execute(TV.setBalance, res, req.body);
 });
 
 app.post("/tv/temperature", (req, res) => {
-  execute(TV.setTemperature, req.body, res);
+  execute(TV.setTemperature, res, req.body);
 });
 
 app.post("/tv/ism", (req, res) => {
-  execute(TV.setIsm, req.body, res);
+  execute(TV.setIsm, res, req.body);
 });
 
 app.post("/tv/energy", (req, res) => {
-  execute(TV.setEnergy, req.body, res);
+  execute(TV.setEnergy, res, req.body);
 });
 
 app.post("/tv/auto", (req, res) => {
-  execute(TV.setAuto, req.body, res);
+  execute(TV.setAuto, res, req.body);
 });
 
 app.post("/tv/programme", (req, res) => {
-  execute(TV.setProgramme, req.body, res);
+  execute(TV.setProgramme, res, req.body);
 });
 
 app.post("/tv/key", (req, res) => {
-  execute(TV.setKey, req.body, res);
+  execute(TV.setKey, res, req.body);
 });
 
 app.post("/tv/backlight", (req, res) => {
-  execute(TV.setBacklight, req.body, res);
+  execute(TV.setBacklight, res, req.body);
 });
 
 app.post("/tv/input", (req, res) => {
-  execute(TV.setInput, req.body, res);
+  execute(TV.setInput, res, req.body);
 });
 
 app.listen(SERVER_PORT, () => {

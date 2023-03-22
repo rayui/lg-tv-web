@@ -1,71 +1,79 @@
 import * as dotenv from "dotenv";
-import axios, { Axios, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 
 export type HDMISwitchResult = {
   status: string;
-  result: string;
+  result: number;
+};
+
+export type RouteVideoOutputParams = {
+  input: number;
+  output: number;
 };
 
 dotenv.config();
 const { env } = process;
 const HDMI_ROUTER_URI = env.HDMI_ROUTER_URI || "http://hdmi/cgi-bin/instr";
 
-const constructCommand = (input: string, output: number) => {
-  return JSON.stringify({
+const createSwitchCommand = (input: number, output: number) => {
+  return {
     comhead: "video switch",
-    source: [parseInt(input, 10), output],
-  });
+    source: [input, output],
+  };
 };
 
-const decodeResult = (response: AxiosResponse<any, any>) => {
+const createGetCommand = () => {
+  return { comhead: "get video status" };
+};
+
+const decodeRouting = (response: AxiosResponse<any, any>) => {
   const { status, data } = response;
+
   return {
     status: status === 200 ? "OK" : "NG",
-    result: data.result,
+    result: parseInt(data.allsource.join(""), 10),
   };
 };
 
-export const routeVideoOutput1 = async (
-  state: string
-): Promise<HDMISwitchResult> => {
-  const input = constructCommand(state, 1);
+export const routeVideoOutput = async ({
+  input,
+  output,
+}: RouteVideoOutputParams): Promise<HDMISwitchResult> => {
+  const data = createSwitchCommand(input, output);
 
-  const response = await axios({
+  console.log(`Set routing`);
+  console.log(
+    JSON.stringify({
+      method: "post",
+      url: HDMI_ROUTER_URI,
+      data,
+    })
+  );
+
+  return await axios({
     method: "post",
     url: HDMI_ROUTER_URI,
-    data: input,
-  });
-
-  return decodeResult(response);
+    data,
+  }).then(getVideoRouting);
 };
 
-export const routeVideoOutput2 = async (
-  state: string
-): Promise<HDMISwitchResult> => {
-  const input = constructCommand(state, 2);
+export const getVideoRouting = async (): Promise<HDMISwitchResult> => {
+  const data = createGetCommand();
+
+  console.log(`Get routing`);
+  console.log(
+    JSON.stringify({
+      method: "post",
+      url: HDMI_ROUTER_URI,
+      data,
+    })
+  );
 
   const response = await axios({
     method: "post",
     url: HDMI_ROUTER_URI,
-    data: input,
+    data,
   });
 
-  return decodeResult(response);
-};
-
-export const getVideoRouting = async (
-  state: string
-): Promise<HDMISwitchResult> => {
-  const input = constructCommand(state, 2);
-
-  const response = await axios({
-    method: "post",
-    url: HDMI_ROUTER_URI,
-    data: { comhead: "get video status" },
-  });
-
-  return {
-    status: response.status === 200 ? "OK" : "NG",
-    result: response.data.allsource,
-  };
+  return decodeRouting(response);
 };

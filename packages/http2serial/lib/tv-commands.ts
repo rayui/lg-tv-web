@@ -6,97 +6,97 @@ const { env } = process;
 const TV_SERIAL_DEVICE = env.TV_SERIAL_DEVICE || "/dev/ttyUSB0";
 const lgtv = new LGTV(TV_SERIAL_DEVICE);
 
-export const getPower = (state: string): Promise<LGTVResult> => {
+export const getPower = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.power);
 };
 
-export const getVolume = (state: string): Promise<LGTVResult> => {
+export const getVolume = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.volume_control);
 };
 
-export const getVolMute = (state: string): Promise<LGTVResult> => {
+export const getVolMute = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.volume_mute);
 };
 
-export const getScreenMute = (state: string): Promise<LGTVResult> => {
+export const getScreenMute = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.screen_mute);
 };
 
-export const getAspect = (state: string): Promise<LGTVResult> => {
+export const getAspect = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.aspect_ratio);
 };
 
-export const getContrast = (state: string): Promise<LGTVResult> => {
+export const getContrast = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.contrast);
 };
 
-export const getBrightness = (state: string): Promise<LGTVResult> => {
+export const getBrightness = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.brightness);
 };
 
-export const getColour = (state: string): Promise<LGTVResult> => {
+export const getColour = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.colour);
 };
 
-export const getTint = (state: string): Promise<LGTVResult> => {
+export const getTint = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.tint);
 };
 
-export const getSharpness = (state: string): Promise<LGTVResult> => {
+export const getSharpness = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.sharpness);
 };
 
-export const getOsd = (state: string): Promise<LGTVResult> => {
+export const getOsd = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.osd);
 };
 
-export const getRemoteLock = (state: string): Promise<LGTVResult> => {
+export const getRemoteLock = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.remote);
 };
 
-export const getTreble = (state: string): Promise<LGTVResult> => {
+export const getTreble = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.treble);
 };
 
-export const getBass = (state: string): Promise<LGTVResult> => {
+export const getBass = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.bass);
 };
 
-export const getBalance = (state: string): Promise<LGTVResult> => {
+export const getBalance = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.balance);
 };
 
-export const getTemperature = (state: string): Promise<LGTVResult> => {
+export const getTemperature = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.temperature);
 };
 
-export const getIsm = (state: string): Promise<LGTVResult> => {
+export const getIsm = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.ism);
 };
 
-export const getEnergy = (state: string): Promise<LGTVResult> => {
+export const getEnergy = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.energy);
 };
 
 //tune later?
 
-export const getAuto = (state: string): Promise<LGTVResult> => {
+export const getAuto = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.auto, null);
 };
 
-export const getProgramme = (state: string): Promise<LGTVResult> => {
+export const getProgramme = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.programme);
 };
 
-export const getKey = (state: string): Promise<LGTVResult> => {
+export const getKey = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.key);
 };
 
-export const getBacklight = (state: string): Promise<LGTVResult> => {
+export const getBacklight = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.backlight);
 };
 
-export const getInput = (state: string): Promise<LGTVResult> => {
+export const getInput = (): Promise<LGTVResult> => {
   return lgtv.get(CNM.input);
 };
 
