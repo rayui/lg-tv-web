@@ -9,6 +9,10 @@ import {
   TV_EDGE_TIME,
   VolumeControl,
   EnergySavingControl,
+  BrightnessControl,
+  ContrastControl,
+  ColourControl,
+  TintControl,
 } from ".";
 
 import { Client } from "../lib";
@@ -64,6 +68,10 @@ export const TVControls = () => {
           <TVInputSelector />
           <VolumeControl />
           <EnergySavingControl />
+          <BrightnessControl />
+          <ContrastControl />
+          <ColourControl />
+          <TintControl />
         </Box>
       )}
     </Box>

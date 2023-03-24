@@ -5,3 +5,7 @@ export * from "./VolumeControl";
 export * from "./EnergySavingControl";
 export * from "./TVInputSelector";
 export * from "./TVControls";
+export * from "./BrightnessControl";
+export * from "./ContrastControl";
+export * from "./ColourControl";
+export * from "./TintControl";
