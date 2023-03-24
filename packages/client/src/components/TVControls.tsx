@@ -13,6 +13,13 @@ import {
   ContrastControl,
   ColourControl,
   TintControl,
+  TrebleControl,
+  BassControl,
+  BalanceControl,
+  TemperatureControl,
+  OSDControl,
+  RemoteLockControl,
+  AutoAdjustControl,
 } from ".";
 
 import { Client } from "../lib";
@@ -58,20 +65,31 @@ export const TVControls = () => {
       <TVPowerSwitch powerToggle={powerToggle} powerState={powerState} />
       {powerState === PowerState.EDGE && (
         <Box sx={{ pt: 2 }}>
-          <Typography variant="button" sx={{ mr: 2 }}>
-            Turning on...
-          </Typography>
+          <Typography variant="body1">Turning on...</Typography>
         </Box>
       )}
       {powerState === PowerState.ON && (
         <Box sx={{ pt: 2 }}>
-          <TVInputSelector />
           <VolumeControl />
+          <Box>
+            <TrebleControl />
+            <BassControl />
+            <BalanceControl />
+          </Box>
           <EnergySavingControl />
-          <BrightnessControl />
-          <ContrastControl />
-          <ColourControl />
-          <TintControl />
+          <Box>
+            <BrightnessControl />
+            <ContrastControl />
+            <ColourControl />
+            <TintControl />
+            <TemperatureControl />
+          </Box>
+          <TVInputSelector />
+          <Box>
+            <OSDControl />
+            <RemoteLockControl />
+            <AutoAdjustControl />
+          </Box>
         </Box>
       )}
     </Box>
