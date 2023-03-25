@@ -42,7 +42,7 @@ const constructURI = (device: DeviceName, command: Command) => {
 export const sendControlRequest = async (
   device: DeviceName,
   command: Command,
-  value: number | string
+  value?: number | string
 ): Promise<APIResponse> => {
   const uri = constructURI(device, command);
   const response = await axios.post(uri, value, {

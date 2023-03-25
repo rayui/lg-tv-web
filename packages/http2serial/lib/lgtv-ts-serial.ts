@@ -1,7 +1,7 @@
 import { SerialPort, ReadlineParser } from "serialport";
 import Queue from "promise-queue";
 
-const DEFAULT_TV_ID = "00";
+const DEFAULT_TV_ID = 0;
 const BAUD_RATE = 9600;
 const GET_BYTE = "FF";
 const RESPONSE_LINE_DELIM = "x";
@@ -81,7 +81,7 @@ const enum CMD {
 type Command = { cmd: CMD; type: CTYPE };
 type Commands = { [key in CNM]: Command };
 
-type TVId = number | null;
+type TVId = number;
 
 export type LGTVResult = {
   status: string;
@@ -116,7 +116,7 @@ const commands: Commands = {
 };
 
 const getTVID = (tvID: TVId) => {
-  return tvID ? tvID.toString(16) : DEFAULT_TV_ID;
+  return tvID.toString(16);
 };
 
 const createLineBoolean = (tv: TVId, command: CMD, value: string): string => {
@@ -230,7 +230,7 @@ export class LGTV {
     });
   }
 
-  set(command: CNM, value: string, tvID: TVId = null) {
+  set(command: CNM, value: string, tvID: TVId = DEFAULT_TV_ID) {
     const line = createLine(tvID, command, value);
 
     if (line) return this.enqueue(line);
@@ -238,7 +238,7 @@ export class LGTV {
     throw new Error(`Invalid command and value ${command} ${value}`);
   }
 
-  get(command: CNM, tvID: TVId = null) {
+  get(command: CNM, tvID: TVId = DEFAULT_TV_ID) {
     const line = createLineRead(tvID, command);
 
     if (line) return this.enqueue(line);

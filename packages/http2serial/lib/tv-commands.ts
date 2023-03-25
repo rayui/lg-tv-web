@@ -81,7 +81,7 @@ export const getEnergy = (): Promise<LGTVResult> => {
 //tune later?
 
 export const getAuto = (): Promise<LGTVResult> => {
-  return lgtv.get(CNM.auto, null);
+  return lgtv.get(CNM.auto);
 };
 
 export const getProgramme = (): Promise<LGTVResult> => {
@@ -177,8 +177,8 @@ export const setEnergy = (state: string): Promise<LGTVResult> => {
 
 //tune later?
 
-export const setAuto = (state: string): Promise<LGTVResult> => {
-  return lgtv.set(CNM.auto, "");
+export const setAuto = (): Promise<LGTVResult> => {
+  return lgtv.set(CNM.auto, "1");
 };
 
 export const setProgramme = (state: string): Promise<LGTVResult> => {

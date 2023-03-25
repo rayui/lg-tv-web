@@ -10,11 +10,7 @@ export const AutoAdjustControl = () => {
   const autoAdjustToggle = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    Client.sendControlRequest(
-      Client.DeviceName.TV,
-      Client.Command.AUTO_ADJUST,
-      !autoAdjust ? "1" : "0"
-    )
+    Client.sendControlRequest(Client.DeviceName.TV, Client.Command.AUTO_ADJUST)
       .then(({ result }) => {
         setAutoAdjust(result === 1 ? true : false);
       })
