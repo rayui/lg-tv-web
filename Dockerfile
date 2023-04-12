@@ -12,8 +12,9 @@ RUN echo "PORT=${PORT}"
 RUN echo "HDMI_ROUTER_URI=${HDMI_ROUTER_URI}"
 RUN echo "TV_SERIAL_DEVICE=${TV_SERIAL_DEVICE}"
 
-ARG uid
-RUN useradd -m --uid $uid -g users -G dialout user
+ARG UID=1001
+ENV UID=$UID
+RUN useradd -m --uid $UID -g users -G dialout user
 
 RUN apt update -y
 RUN apt install curl -y
