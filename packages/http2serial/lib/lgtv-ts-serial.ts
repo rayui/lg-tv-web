@@ -8,12 +8,12 @@ const RESPONSE_LINE_DELIM = "x";
 const TRUE_BYTE = "01";
 const FALSE_BYTE = "00";
 const LINE_END = "\r";
+const RESPONSE_LENGTH = 9;
 
 const INVALID_STATE_MESSAGE = "Invalid state";
 
 const MAX_CONCURRENT = 1;
 const MAX_QUEUE = Infinity;
-const TIMEOUT_LEN = 5000;
 
 const enum CTYPE {
   "BOOL",
@@ -163,24 +163,38 @@ const createLine = (tvID: TVId, command: CNM, value: string) => {
 
 const send = (port: SerialPort, parser: ReadlineParser, str: string) => {
   return new Promise<string>((resolve: Function, reject: Function) => {
-    parser.once("data", (data) => {
-      clearTimeout(timeout);
-      console.log(`Received data: ${data}`);
-      resolve(data);
-    });
-
-    const timeout = setTimeout(() => {
-      reject(new Error(`Serial port timed out`));
-    }, TIMEOUT_LEN);
-
     console.log(`Sending command: ${str}`);
 
-    port.write(str + LINE_END, (err: Error | null | undefined) => {
-      port.drain();
+    const resolver = (data: string) => {
+      try {
+        console.log(`Received data: ${data}`);
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      }
+    };
+
+    port.flush((err) => {
       if (err) {
         reject(err);
         return;
       }
+
+      parser.once("data", resolver);
+
+      port.write(str + LINE_END, (err: Error | null | undefined) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        port.drain((err) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+        });
+      });
     });
   });
 };
@@ -214,19 +228,18 @@ export class LGTV {
     const parser = this.parser;
 
     return new Promise<LGTVResult>((resolve, reject) => {
-      queue
-        .add(() => {
-          console.log(`Enqueing command: ${line}`);
-          return send(serialPort, parser, line);
-        })
-        .then((response: string) => {
-          const data = processTVResponse(response);
-          console.log(`Returning data: ${JSON.stringify(data)}`);
-          resolve(data);
-        })
-        .catch((err) => {
-          reject(err);
-        });
+      return queue.add(() => {
+        console.log(`Enqueing command: ${line}`);
+        return send(serialPort, parser, line)
+          .then((response: string) => {
+            const data = processTVResponse(response);
+            console.log(`Returning data: ${JSON.stringify(data)}`);
+            resolve(data);
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      });
     });
   }
 
