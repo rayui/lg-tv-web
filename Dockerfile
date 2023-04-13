@@ -1,4 +1,24 @@
-FROM node:lts-bullseye-slim
+FROM node:lts-bullseye-slim as node
+WORKDIR /app
+
+RUN apt update -y
+RUN apt install curl -y
+
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+
+RUN apt update -y
+RUN apt install -y gcc g++ make
+RUN rm -rf /var/lib/apt/lists/*
+
+COPY package.json .
+COPY yarn.lock .
+COPY . .
+RUN yarn config set network-timeout 600000 -g
+RUN yarn install
+RUN yarn build
+
+FROM --platform=$TARGETPLATFORM node:lts-bullseye-slim
+WORKDIR /app
 
 ARG PORT=3000
 ARG HDMI_ROUTER_URI="http://192.168.1.6/cgi-bin/instr"
@@ -16,25 +36,9 @@ ARG UID=1001
 ENV UID=$UID
 RUN useradd -m --uid $UID -g users -G dialout user
 
-RUN apt update -y
-RUN apt install curl -y
-
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 
-RUN apt update -y
-RUN apt install -y nodejs gcc g++ make
-RUN rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-COPY package.json .
-COPY yarn.lock .
-COPY . .
-RUN yarn config set network-timeout 600000 -g
-RUN yarn install
-RUN yarn build
-
-COPY --chown=user:users . /app
+COPY --chown=user:users --from=node /app .
 
 USER user
 EXPOSE $PORT

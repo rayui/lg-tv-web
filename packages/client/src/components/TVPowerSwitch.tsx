@@ -1,6 +1,5 @@
 import React, { ChangeEventHandler } from "react";
-import { Typography, Box } from "@mui/material";
-import { Switch } from "@rmwc/switch";
+import { Typography, Box, Switch } from "@mui/material";
 import "@rmwc/switch/styles";
 
 export const TV_EDGE_TIME = 7000;

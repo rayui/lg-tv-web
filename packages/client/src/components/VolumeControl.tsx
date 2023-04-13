@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
-import { Typography, Box, Switch } from "@mui/material";
-import { Slider } from "@mui/material";
+import { Typography, Box, Switch, Slider } from "@mui/material";
 import "@rmwc/switch/styles";
 
 import { Client } from "../lib";
