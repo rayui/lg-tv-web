@@ -37,6 +37,9 @@ ARG UID=1001
 ENV UID=$UID
 RUN useradd -m --uid $UID -g users -G dialout user
 
+RUN apt update -y
+RUN apt install curl -y
+
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 
 COPY --chown=user:users --from=node /app .
