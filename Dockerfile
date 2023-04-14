@@ -17,7 +17,8 @@ RUN yarn config set network-timeout 600000 -g
 RUN yarn install
 RUN yarn build
 
-FROM --platform=linux/arm64 node:lts-bullseye-slim
+#FROM --platform=linux/arm64 node:lts-bullseye-slim
+FROM node:lts-bullseye-slim
 WORKDIR /app
 
 ARG PORT=3000
