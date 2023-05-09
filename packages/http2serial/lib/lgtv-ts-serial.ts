@@ -8,7 +8,7 @@ const RESPONSE_LINE_DELIM = "x";
 const TRUE_BYTE = "01";
 const FALSE_BYTE = "00";
 const LINE_END = "\r";
-const RESPONSE_LENGTH = 9;
+const QUEUE_TIMEOUT = 10000;
 
 const INVALID_STATE_MESSAGE = "Invalid state";
 
@@ -230,6 +230,8 @@ export class LGTV {
     return new Promise<LGTVResult>((resolve, reject) => {
       return queue.add(() => {
         console.log(`Enqueing command: ${line}`);
+        const timer = setTimeout(reject, QUEUE_TIMEOUT);
+
         return send(serialPort, parser, line)
           .then((response: string) => {
             const data = processTVResponse(response);
@@ -238,6 +240,9 @@ export class LGTV {
           })
           .catch((err) => {
             reject(err);
+          })
+          .finally(() => {
+            clearTimeout(timer);
           });
       });
     });
