@@ -10,7 +10,9 @@ const FALSE_BYTE = "00";
 const LINE_END = "\r";
 const QUEUE_TIMEOUT = 10000;
 
-const INVALID_STATE_MESSAGE = "Invalid state";
+const MSG_INVALID_INPUT = "Invalid input";
+const MSG_UNEXPECTED_RESPONSE = "Unexpected response";
+const MSG_TIMEOUT_REJECT = "Command timeout: no response from TV";
 
 const MAX_CONCURRENT = 1;
 const MAX_QUEUE = Infinity;
@@ -123,7 +125,7 @@ const createLineBoolean = (tv: TVId, command: CMD, value: string): string => {
   const validateBoolean = (state: string) => {
     const inputState = parseInt(state, 10);
     if (isNaN(inputState) || (inputState !== 1 && inputState !== 0))
-      throw new Error(INVALID_STATE_MESSAGE);
+      throw new Error(MSG_INVALID_INPUT);
 
     return inputState !== 0 ? TRUE_BYTE : FALSE_BYTE;
   };
@@ -134,7 +136,7 @@ const createLineBoolean = (tv: TVId, command: CMD, value: string): string => {
 const createLineNumber = (tv: TVId, command: CMD, value: string): string => {
   const validateNumber = (state: string) => {
     const inputState = parseInt(state, 10);
-    if (isNaN(inputState)) throw new Error(INVALID_STATE_MESSAGE);
+    if (isNaN(inputState)) throw new Error(MSG_INVALID_INPUT);
     return inputState.toString(16);
   };
 
@@ -206,7 +208,7 @@ const processTVResponse = (response: string): LGTVResult => {
   if (found) {
     return { status: found[1], result: parseInt(found[2], 16) };
   } else {
-    throw new Error(`Unexpected Response [${response}]`);
+    throw new Error(`${MSG_UNEXPECTED_RESPONSE} [${response}]`);
   }
 };
 
@@ -230,7 +232,9 @@ export class LGTV {
     return new Promise<LGTVResult>((resolve, reject) => {
       return queue.add(() => {
         console.log(`Enqueing command: ${line}`);
-        const timer = setTimeout(reject, QUEUE_TIMEOUT);
+        const timer = setTimeout(() => {
+          reject(new Error(MSG_TIMEOUT_REJECT));
+        }, QUEUE_TIMEOUT);
 
         return send(serialPort, parser, line)
           .then((response: string) => {
