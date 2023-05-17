@@ -8,7 +8,8 @@ const RESPONSE_LINE_DELIM = "x";
 const TRUE_BYTE = "01";
 const FALSE_BYTE = "00";
 const LINE_END = "\r";
-const QUEUE_TIMEOUT = 10000;
+const QUEUE_TIMEOUT = 10 * 1000;
+const KEEPALIVE_INTERVAL = 60 * 1000;
 
 const MSG_INVALID_INPUT = "Invalid input";
 const MSG_UNEXPECTED_RESPONSE = "Unexpected response";
@@ -216,12 +217,18 @@ export class LGTV {
   serialPort: SerialPort;
   parser: ReadlineParser;
   queue: Queue = new Queue(MAX_CONCURRENT, MAX_QUEUE);
+  keepAlive: NodeJS.Timer;
 
   constructor(path: string) {
     this.serialPort = new SerialPort({ path: path, baudRate: BAUD_RATE });
     this.parser = this.serialPort.pipe(
       new ReadlineParser({ delimiter: RESPONSE_LINE_DELIM })
     );
+    this.keepAlive = setInterval(this.sendKeepAlive, KEEPALIVE_INTERVAL);
+  }
+
+  sendKeepAlive() {
+    return this.enqueue(createLineRead(DEFAULT_TV_ID, CNM.power));
   }
 
   enqueue(line: string) {
