@@ -224,11 +224,10 @@ export class LGTV {
     this.parser = this.serialPort.pipe(
       new ReadlineParser({ delimiter: RESPONSE_LINE_DELIM })
     );
-    this.keepAlive = setInterval(this.sendKeepAlive, KEEPALIVE_INTERVAL);
-  }
-
-  sendKeepAlive() {
-    return this.enqueue(createLineRead(DEFAULT_TV_ID, CNM.power));
+    this.keepAlive = setInterval(
+      this.sendKeepAlive.bind(this),
+      KEEPALIVE_INTERVAL
+    );
   }
 
   enqueue(line: string) {
@@ -273,5 +272,9 @@ export class LGTV {
     if (line) return this.enqueue(line);
 
     throw new Error(`Invalid command ${command}`);
+  }
+
+  sendKeepAlive() {
+    return this.enqueue(createLineRead(DEFAULT_TV_ID, CNM.power));
   }
 }
