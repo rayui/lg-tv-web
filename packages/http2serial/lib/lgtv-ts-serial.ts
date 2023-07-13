@@ -238,11 +238,14 @@ export class LGTV {
     return new Promise<LGTVResult>((resolve, reject) => {
       return queue.add(() => {
         console.log(`Enqueing command: ${line}`);
-        const timer = setTimeout(() => {
-          reject(new Error(MSG_TIMEOUT_REJECT));
-        }, QUEUE_TIMEOUT);
 
-        return send(serialPort, parser, line)
+        const timer = new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(new Error(MSG_TIMEOUT_REJECT));
+          }, QUEUE_TIMEOUT);
+        });
+
+        const fn = send(serialPort, parser, line)
           .then((response: string) => {
             const data = processTVResponse(response);
             console.log(`Returning data: ${JSON.stringify(data)}`);
@@ -250,10 +253,9 @@ export class LGTV {
           })
           .catch((err) => {
             reject(err);
-          })
-          .finally(() => {
-            clearTimeout(timer);
           });
+
+        return Promise.race([timer, fn]);
       });
     });
   }
