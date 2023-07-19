@@ -262,18 +262,20 @@ export class LGTV {
 
   set(command: CNM, value: string, tvID: TVId = DEFAULT_TV_ID) {
     const line = createLine(tvID, command, value);
-
-    if (line) return this.enqueue(line);
-
-    throw new Error(`Invalid command and value ${command} ${value}`);
+    try {
+      if (line) return this.enqueue(line);
+    } catch (err) {
+      console.log(`Command failed: ${line}\nError: ${err}`);
+    }
   }
 
   get(command: CNM, tvID: TVId = DEFAULT_TV_ID) {
     const line = createLineRead(tvID, command);
-
-    if (line) return this.enqueue(line);
-
-    throw new Error(`Invalid command ${command}`);
+    try {
+      if (line) return this.enqueue(line);
+    } catch (err) {
+      console.log(`Command failed: ${line}\nError: ${err}`);
+    }
   }
 
   sendKeepAlive() {
