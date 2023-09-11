@@ -237,12 +237,18 @@ export class LGTV {
 
     return new Promise<LGTVResult>((resolve, reject) => {
       return queue.add(() => {
+        let resolved = false;
         console.log(`Enqueing command: ${line}`);
 
-        const timer = new Promise((_, reject) => {
+        const timer = new Promise((_, _reject) => {
           setTimeout(() => {
-            reject(new Error(MSG_TIMEOUT_REJECT));
+            _reject();
           }, QUEUE_TIMEOUT);
+        }).catch((err) => {
+          if (!resolved) {
+            console.log(`Send command timed out!: ${line} ${err}`);
+            reject(new Error(MSG_TIMEOUT_REJECT));
+          }
         });
 
         const fn = send(serialPort, parser, line)
@@ -252,7 +258,11 @@ export class LGTV {
             resolve(data);
           })
           .catch((err) => {
+            console.log(`Send command failed!: ${line}`);
             reject(err);
+          })
+          .finally(() => {
+            resolved = true;
           });
 
         return Promise.race([timer, fn]);
@@ -261,21 +271,11 @@ export class LGTV {
   }
 
   set(command: CNM, value: string, tvID: TVId = DEFAULT_TV_ID) {
-    const line = createLine(tvID, command, value);
-    try {
-      if (line) return this.enqueue(line);
-    } catch (err) {
-      console.log(`Command failed: ${line}\nError: ${err}`);
-    }
+    return this.enqueue(createLine(tvID, command, value));
   }
 
   get(command: CNM, tvID: TVId = DEFAULT_TV_ID) {
-    const line = createLineRead(tvID, command);
-    try {
-      if (line) return this.enqueue(line);
-    } catch (err) {
-      console.log(`Command failed: ${line}\nError: ${err}`);
-    }
+    return this.enqueue(createLineRead(tvID, command));
   }
 
   sendKeepAlive() {
