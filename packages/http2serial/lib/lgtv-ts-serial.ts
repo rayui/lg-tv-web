@@ -177,6 +177,10 @@ const send = (port: SerialPort, parser: ReadlineParser, str: string) => {
       }
     };
 
+    if (!port.isOpen) {
+      reject(new Error("Serial port not open!"));
+    }
+
     port.flush((err) => {
       if (err) {
         reject(err);
