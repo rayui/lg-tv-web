@@ -1,18 +1,9 @@
 import * as dotenv from "dotenv";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { TV, HDMISwitch, Serial } from "./lib";
-
-type Executor = (
-  state: any
-) => Promise<Serial.LGTVResult | HDMISwitch.HDMISwitchResult>;
 
 interface JSONErr {
   json: (err: { err: string }) => void;
-}
-
-interface JSONResponse<T> {
-  json: (data: T) => void;
-  status: (code: number) => JSONErr;
 }
 
 dotenv.config();
@@ -20,228 +11,221 @@ const { env } = process;
 
 const SERVER_PORT = env.PORT || 3000;
 
-const execute = (
-  fn: Executor,
-  res: JSONResponse<Serial.LGTVResult | HDMISwitch.HDMISwitchResult>,
-  val?: any
-) => {
-  return fn(val)
-    .then((result) => {
-      res.json(result);
-    })
-    .catch((err: Error) => {
-      res.status(500).json({
-        err: err.message,
-      });
-    });
-};
-
 const app = express();
 app.use(express.text());
 app.use(express.static("../client/build"));
 
-app.get("/switch/status", (req, res) => {
-  execute(HDMISwitch.getVideoRouting, res);
+app.get("/switch/status", (req, res, next) => {
+  HDMISwitch.getVideoRouting().then(res.json).catch(next);
 });
 
-app.post("/switch/lounge", (req, res) => {
-  execute(HDMISwitch.routeVideoOutput, res, {
+app.post("/switch/lounge", (req, res, next) => {
+  HDMISwitch.routeVideoOutput({
     input: parseInt(req.body, 10),
     output: 1,
-  });
+  })
+    .then(res.json)
+    .catch(next);
 });
 
-app.post("/switch/office", (req, res) => {
-  execute(HDMISwitch.routeVideoOutput, res, {
+app.post("/switch/office", (req, res, next) => {
+  HDMISwitch.routeVideoOutput({
     input: parseInt(req.body, 10),
     output: 2,
-  });
+  })
+    .then(res.json)
+    .catch(next);
 });
 
-app.get("/tv/power", (req, res) => {
-  execute(TV.getPower, res);
+app.get("/tv/power", (req, res, next) => {
+  TV.getPower().then(res.json).catch(next);
 });
 
-app.get("/tv/volume", (req, res) => {
-  execute(TV.getVolume, res);
+app.get("/tv/volume", (req, res, next) => {
+  TV.getVolume().then(res.json).catch(next);
 });
 
-app.get("/tv/vol-mute", (req, res) => {
-  execute(TV.getVolMute, res);
+app.get("/tv/vol-mute", (req, res, next) => {
+  TV.getVolMute().then(res.json).catch(next);
 });
 
-app.get("/tv/screen-mute", (req, res) => {
-  execute(TV.getScreenMute, res);
+app.get("/tv/screen-mute", (req, res, next) => {
+  TV.getScreenMute().then(res.json).catch(next);
 });
 
-app.get("/tv/aspect", (req, res) => {
-  execute(TV.getAspect, res);
+app.get("/tv/aspect", (req, res, next) => {
+  TV.getAspect().then(res.json).catch(next);
 });
 
-app.get("/tv/contrast", (req, res) => {
-  execute(TV.getContrast, res);
+app.get("/tv/contrast", (req, res, next) => {
+  TV.getContrast().then(res.json).catch(next);
 });
 
-app.get("/tv/brightness", (req, res) => {
-  execute(TV.getBrightness, res);
+app.get("/tv/brightness", (req, res, next) => {
+  TV.getBrightness().then(res.json).catch(next);
 });
 
-app.get("/tv/colour", (req, res) => {
-  execute(TV.getColour, res);
+app.get("/tv/colour", (req, res, next) => {
+  TV.getColour().then(res.json).catch(next);
 });
 
-app.get("/tv/tint", (req, res) => {
-  execute(TV.getTint, res);
+app.get("/tv/tint", (req, res, next) => {
+  TV.getTint().then(res.json).catch(next);
 });
 
-app.get("/tv/sharpness", (req, res) => {
-  execute(TV.getSharpness, res);
+app.get("/tv/sharpness", (req, res, next) => {
+  TV.getSharpness().then(res.json).catch(next);
 });
 
-app.get("/tv/osd", (req, res) => {
-  execute(TV.getOsd, res);
+app.get("/tv/osd", (req, res, next) => {
+  TV.getOsd().then(res.json).catch(next);
 });
 
-app.get("/tv/lock", (req, res) => {
-  execute(TV.getRemoteLock, res);
+app.get("/tv/lock", (req, res, next) => {
+  TV.getRemoteLock().then(res.json).catch(next);
 });
 
-app.get("/tv/treble", (req, res) => {
-  execute(TV.getTreble, res);
+app.get("/tv/treble", (req, res, next) => {
+  TV.getTreble().then(res.json).catch(next);
 });
 
-app.get("/tv/bass", (req, res) => {
-  execute(TV.getBass, res);
+app.get("/tv/bass", (req, res, next) => {
+  TV.getBass().then(res.json).catch(next);
 });
 
-app.get("/tv/balance", (req, res) => {
-  execute(TV.getBalance, res);
+app.get("/tv/balance", (req, res, next) => {
+  TV.getBalance().then(res.json).catch(next);
 });
 
-app.get("/tv/temperature", (req, res) => {
-  execute(TV.getTemperature, res);
+app.get("/tv/temperature", (req, res, next) => {
+  TV.getTemperature().then(res.json).catch(next);
 });
 
-app.get("/tv/ism", (req, res) => {
-  execute(TV.getIsm, res);
+app.get("/tv/ism", (req, res, next) => {
+  TV.getIsm().then(res.json).catch(next);
 });
 
-app.get("/tv/energy", (req, res) => {
-  execute(TV.getEnergy, res);
+app.get("/tv/energy", (req, res, next) => {
+  TV.getEnergy().then(res.json).catch(next);
 });
 
-app.get("/tv/auto", (req, res) => {
-  execute(TV.getAuto, res);
+app.get("/tv/auto", (req, res, next) => {
+  TV.getAuto().then(res.json).catch(next);
 });
 
-app.get("/tv/programme", (req, res) => {
-  execute(TV.getProgramme, res);
+app.get("/tv/programme", (req, res, next) => {
+  TV.getProgramme().then(res.json).catch(next);
 });
 
-app.get("/tv/key", (req, res) => {
-  execute(TV.getKey, res);
+app.get("/tv/key", (req, res, next) => {
+  TV.getKey().then(res.json).catch(next);
 });
 
-app.get("/tv/backlight", (req, res) => {
-  execute(TV.getBacklight, res);
+app.get("/tv/backlight", (req, res, next) => {
+  TV.getBacklight().then(res.json).catch(next);
 });
 
-app.get("/tv/input", (req, res) => {
-  execute(TV.getInput, res);
+app.get("/tv/input", (req, res, next) => {
+  TV.getInput().then(res.json).catch(next);
 });
 
-app.post("/tv/power", (req, res) => {
-  execute(TV.setPower, res, req.body);
+app.post("/tv/power", (req, res, next) => {
+  TV.setPower(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/volume", (req, res) => {
-  execute(TV.setVolume, res, req.body);
+app.post("/tv/volume", (req, res, next) => {
+  TV.setVolume(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/vol-mute", (req, res) => {
-  execute(TV.setVolMute, res, req.body);
+app.post("/tv/vol-mute", (req, res, next) => {
+  TV.setVolMute(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/screen-mute", (req, res) => {
-  execute(TV.setScreenMute, res, req.body);
+app.post("/tv/screen-mute", (req, res, next) => {
+  TV.setScreenMute(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/aspect", (req, res) => {
-  execute(TV.setAspect, res, req.body);
+app.post("/tv/aspect", (req, res, next) => {
+  TV.setAspect(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/contrast", (req, res) => {
-  execute(TV.setContrast, res, req.body);
+app.post("/tv/contrast", (req, res, next) => {
+  TV.setContrast(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/brightness", (req, res) => {
-  execute(TV.setBrightness, res, req.body);
+app.post("/tv/brightness", (req, res, next) => {
+  TV.setBrightness(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/colour", (req, res) => {
-  execute(TV.setColour, res, req.body);
+app.post("/tv/colour", (req, res, next) => {
+  TV.setColour(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/tint", (req, res) => {
-  execute(TV.setTint, res, req.body);
+app.post("/tv/tint", (req, res, next) => {
+  TV.setTint(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/sharpness", (req, res) => {
-  execute(TV.setSharpness, res, req.body);
+app.post("/tv/sharpness", (req, res, next) => {
+  TV.setSharpness(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/osd", (req, res) => {
-  execute(TV.setOsd, res, req.body);
+app.post("/tv/osd", (req, res, next) => {
+  TV.setOsd(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/lock", (req, res) => {
-  execute(TV.setRemoteLock, res, req.body);
+app.post("/tv/lock", (req, res, next) => {
+  TV.setRemoteLock(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/treble", (req, res) => {
-  execute(TV.setTreble, res, req.body);
+app.post("/tv/treble", (req, res, next) => {
+  TV.setTreble(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/bass", (req, res) => {
-  execute(TV.setBass, res, req.body);
+app.post("/tv/bass", (req, res, next) => {
+  TV.setBass(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/balance", (req, res) => {
-  execute(TV.setBalance, res, req.body);
+app.post("/tv/balance", (req, res, next) => {
+  TV.setBalance(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/temperature", (req, res) => {
-  execute(TV.setTemperature, res, req.body);
+app.post("/tv/temperature", (req, res, next) => {
+  TV.setTemperature(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/ism", (req, res) => {
-  execute(TV.setIsm, res, req.body);
+app.post("/tv/ism", (req, res, next) => {
+  TV.setIsm(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/energy", (req, res) => {
-  execute(TV.setEnergy, res, req.body);
+app.post("/tv/energy", (req, res, next) => {
+  TV.setEnergy(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/auto", (req, res) => {
-  execute(TV.setAuto, res, req.body);
+app.post("/tv/auto", (req, res, next) => {
+  TV.setAuto().then(res.json).catch(next);
 });
 
-app.post("/tv/programme", (req, res) => {
-  execute(TV.setProgramme, res, req.body);
+app.post("/tv/programme", (req, res, next) => {
+  TV.setProgramme(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/key", (req, res) => {
-  execute(TV.setKey, res, req.body);
+app.post("/tv/key", (req, res, next) => {
+  TV.setKey(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/backlight", (req, res) => {
-  execute(TV.setBacklight, res, req.body);
+app.post("/tv/backlight", (req, res, next) => {
+  TV.setBacklight(req.body).then(res.json).catch(next);
 });
 
-app.post("/tv/input", (req, res) => {
-  execute(TV.setInput, res, req.body);
+app.post("/tv/input", (req, res, next) => {
+  TV.setInput(req.body).then(res.json).catch(next);
 });
 
 app.listen(SERVER_PORT, () => {
   console.log(`Example app listening at http://localhost:${SERVER_PORT}`);
+});
+
+app.use((err: any, _req: Request, res: Response) => {
+  console.log(err);
+  res.status(500).end(err);
 });

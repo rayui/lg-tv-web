@@ -177,32 +177,29 @@ const send = (port: SerialPort, parser: ReadlineParser, str: string) => {
       }
     };
 
-    if (!port.isOpen) {
-      reject(new Error("Serial port not open!"));
-    }
-
-    port.flush((err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      parser.once("data", resolver);
-
-      port.write(str + LINE_END, (err: Error | null | undefined) => {
+    if (port.isOpen) {
+      port.flush((err) => {
         if (err) {
           reject(err);
-          return;
-        }
+        } else {
+          parser.once("data", resolver);
 
-        port.drain((err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-        });
+          port.write(str + LINE_END, (err: Error | null | undefined) => {
+            if (err) {
+              reject(err);
+            } else {
+              port.drain((err) => {
+                if (err) {
+                  reject(err);
+                }
+              });
+            }
+          });
+        }
       });
-    });
+    } else {
+      reject(new Error("Serial port not open!"));
+    }
   });
 };
 
@@ -220,7 +217,7 @@ const processTVResponse = (response: string): LGTVResult => {
 export class LGTV {
   serialPort: SerialPort;
   parser: ReadlineParser;
-  queue: Queue = new Queue(MAX_CONCURRENT, MAX_QUEUE);
+  queue: Queue;
   keepAlive: NodeJS.Timer;
 
   constructor(path: string) {
@@ -232,6 +229,7 @@ export class LGTV {
       this.sendKeepAlive.bind(this),
       KEEPALIVE_INTERVAL
     );
+    this.queue = new Queue(MAX_CONCURRENT, MAX_QUEUE);
   }
 
   enqueue(line: string) {
