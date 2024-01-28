@@ -14,6 +14,7 @@ const KEEPALIVE_INTERVAL = 60 * 1000;
 const MSG_INVALID_INPUT = "Invalid input";
 const MSG_UNEXPECTED_RESPONSE = "Unexpected response";
 const MSG_TIMEOUT_REJECT = "Command timeout: no response from TV";
+const MSG_UNKNOWN = "Unknown error";
 
 const MAX_CONCURRENT = 1;
 const MAX_QUEUE = Infinity;
@@ -239,22 +240,19 @@ export class LGTV {
 
     return new Promise<LGTVResult>((resolve, reject) => {
       return queue.add(() => {
-        let resolved = false;
         console.log(`Enqueing command: ${line}`);
 
-        const timer = new Promise((_, _reject) => {
+        const timer = new Promise((_, rejectInner) => {
           setTimeout(() => {
-            _reject();
+            rejectInner(new Error(MSG_TIMEOUT_REJECT));
           }, QUEUE_TIMEOUT);
-        }).catch((err) => {
-          if (!resolved) {
-            console.log(`Send command timed out!: ${line} ${err}`);
-            reject(new Error(MSG_TIMEOUT_REJECT));
-          }
         });
 
-        const fn = send(serialPort, parser, line)
-          .then((response: string) => {
+        return Promise.race([timer, send(serialPort, parser, line)])
+          .then((response: string | unknown) => {
+            if (typeof response !== "string") {
+              throw new Error(MSG_UNKNOWN);
+            }
             const data = processTVResponse(response);
             console.log(`Returning data: ${JSON.stringify(data)}`);
             resolve(data);
@@ -262,12 +260,7 @@ export class LGTV {
           .catch((err) => {
             console.log(`Send command failed!: ${line}`);
             reject(err);
-          })
-          .finally(() => {
-            resolved = true;
           });
-
-        return Promise.race([timer, fn]);
       });
     });
   }
