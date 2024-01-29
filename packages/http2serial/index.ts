@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import express, { NextFunction } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { TV, HDMISwitch, Serial } from "./lib";
 
 type Executor = (
@@ -30,9 +30,12 @@ const execute = (
     .then((result) => {
       res.json(result);
     })
-    .catch((err) => {
-      res.status(500).json(err);
-    });
+    .catch(next);
+};
+
+const errorHandler = (err: any, req: Request, res: Response) => {
+  console.error(err);
+  res.status(500).json(err);
 };
 
 const app = express();
@@ -195,6 +198,8 @@ app.post("/tv/backlight", (req, res, next) => {
 app.post("/tv/input", (req, res, next) => {
   execute(TV.setInput, res, next, req.body);
 });
+
+app.use(errorHandler);
 
 app.listen(SERVER_PORT, () => {
   console.log(`Example app listening at http://localhost:${SERVER_PORT}`);

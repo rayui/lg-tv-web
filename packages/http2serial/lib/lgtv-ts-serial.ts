@@ -10,6 +10,7 @@ const FALSE_BYTE = "00";
 const LINE_END = "\r";
 const QUEUE_TIMEOUT = 10 * 1000;
 const KEEPALIVE_INTERVAL = 60 * 1000;
+const RETRY_OPEN_INTERVAL = 10 * 1000;
 
 const MSG_INVALID_INPUT = "Invalid input";
 const MSG_UNEXPECTED_RESPONSE = "Unexpected response";
@@ -215,30 +216,36 @@ const processTVResponse = (response: string): LGTVResult => {
   }
 };
 
-export class LGTV {
-  serialPort: SerialPort;
-  parser: ReadlineParser;
-  queue: Queue;
-  keepAlive: NodeJS.Timer;
+const createSerialPort = (path: string) => {
+  let serialPort: SerialPort | undefined = undefined;
 
-  constructor(path: string) {
-    this.serialPort = new SerialPort({ path: path, baudRate: BAUD_RATE });
-    this.parser = this.serialPort.pipe(
-      new ReadlineParser({ delimiter: RESPONSE_LINE_DELIM })
-    );
-    this.keepAlive = setInterval(
-      this.sendKeepAlive.bind(this),
-      KEEPALIVE_INTERVAL
-    );
-    this.queue = new Queue(MAX_CONCURRENT, MAX_QUEUE);
-  }
+  serialPort = new SerialPort({ path: path, baudRate: BAUD_RATE }, (err) => {
+    if (err) {
+      console.log(new Error(`Serial port at ${path} cannot be opened`));
+    }
+  });
 
-  enqueue(line: string) {
-    const queue = this.queue;
-    const serialPort = this.serialPort;
-    const parser = this.parser;
+  return serialPort;
+};
 
-    return new Promise<LGTVResult>((resolve, reject) => {
+const createParser = (serialPort: SerialPort | undefined) => {
+  return serialPort
+    ? serialPort.pipe(new ReadlineParser({ delimiter: RESPONSE_LINE_DELIM }))
+    : undefined;
+};
+
+const enqueue = (
+  serialPort: SerialPort | undefined,
+  parser: ReadlineParser | undefined,
+  queue: Queue,
+  line: string
+) => {
+  return new Promise<LGTVResult>((resolve, reject) => {
+    if (!serialPort) {
+      reject(new Error("Cannot enqueue command; serial port is not open"));
+    } else if (!parser) {
+      reject(new Error("Cannot enqueue command; parser is not ready"));
+    } else {
       return queue.add(() => {
         console.log(`Enqueing command: ${line}`);
 
@@ -262,18 +269,95 @@ export class LGTV {
             reject(err);
           });
       });
+    }
+  });
+};
+
+const serialPortClosedHandler = () => {};
+
+export class LGTV {
+  serialPort: SerialPort | undefined;
+  parser: ReadlineParser | undefined;
+  retryInterval: NodeJS.Timer | undefined = undefined;
+  keepAliveInterval: NodeJS.Timer | undefined = undefined;
+  queue: Queue;
+  path: string;
+
+  constructor(path: string) {
+    this.path = path;
+    this.setupSerialPort();
+    this.retryInterval = setInterval(
+      this.setupSerialPort.bind(this),
+      RETRY_OPEN_INTERVAL
+    );
+
+    this.queue = new Queue(MAX_CONCURRENT, MAX_QUEUE);
+  }
+
+  setupSerialPort() {
+    if (!this.serialPort || !this.serialPort.isOpen) {
+      this.serialPort = createSerialPort(this.path);
+
+      if (this.serialPort) {
+        this.serialPort.on("open", () => {
+          console.log(`Serial port opened!`);
+          console.log(`Creating parser`);
+          this.parser = createParser(this.serialPort);
+
+          console.log(`Creating keepAlive poller`);
+          this.keepAliveInterval = setInterval(
+            this.keepAlive.bind(this),
+            KEEPALIVE_INTERVAL
+          );
+        });
+
+        this.serialPort.on("close", () => {
+          console.log(`Serial port closed, destroying!`);
+          this.serialPort = undefined;
+          console.log(`Destroying parser`);
+          this.parser = undefined;
+        });
+
+        this.serialPort.on("error", (err) => {
+          console.log(`Serial port error! ${err}`);
+        });
+      } else {
+        console.log(
+          `Serial port could not be opened! Trying to reopen in ${
+            RETRY_OPEN_INTERVAL / 1000
+          } seconds...`
+        );
+        this.serialPort = undefined;
+      }
+    }
+  }
+
+  keepAlive() {
+    enqueue(
+      this.serialPort,
+      this.parser,
+      this.queue,
+      createLineRead(DEFAULT_TV_ID, CNM.power)
+    ).catch((err) => {
+      console.error(err);
     });
   }
 
   set(command: CNM, value: string, tvID: TVId = DEFAULT_TV_ID) {
-    return this.enqueue(createLine(tvID, command, value));
+    return enqueue(
+      this.serialPort,
+      this.parser,
+      this.queue,
+      createLine(tvID, command, value)
+    );
   }
 
   get(command: CNM, tvID: TVId = DEFAULT_TV_ID) {
-    return this.enqueue(createLineRead(tvID, command));
-  }
-
-  sendKeepAlive() {
-    return this.enqueue(createLineRead(DEFAULT_TV_ID, CNM.power));
+    return enqueue(
+      this.serialPort,
+      this.parser,
+      this.queue,
+      createLineRead(tvID, command)
+    );
   }
 }
