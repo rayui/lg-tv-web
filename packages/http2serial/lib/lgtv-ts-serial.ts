@@ -217,15 +217,11 @@ const processTVResponse = (response: string): LGTVResult => {
 };
 
 const createSerialPort = (path: string) => {
-  let serialPort: SerialPort | undefined = undefined;
-
-  serialPort = new SerialPort({ path: path, baudRate: BAUD_RATE }, (err) => {
+  return new SerialPort({ path: path, baudRate: BAUD_RATE }, (err) => {
     if (err) {
       console.log(new Error(`Serial port at ${path} cannot be opened`));
     }
   });
-
-  return serialPort;
 };
 
 const createParser = (serialPort: SerialPort | undefined) => {
@@ -241,7 +237,7 @@ const enqueue = (
   line: string
 ) => {
   return new Promise<LGTVResult>((resolve, reject) => {
-    if (!serialPort) {
+    if (!serialPort || !serialPort.isOpen) {
       reject(new Error("Cannot enqueue command; serial port is not open"));
     } else if (!parser) {
       reject(new Error("Cannot enqueue command; parser is not ready"));
@@ -296,6 +292,8 @@ export class LGTV {
 
   setupSerialPort() {
     if (!this.serialPort || !this.serialPort.isOpen) {
+      //programatically reset the usb device
+
       this.serialPort = createSerialPort(this.path);
 
       if (this.serialPort) {
@@ -316,6 +314,8 @@ export class LGTV {
           this.serialPort = undefined;
           console.log(`Destroying parser`);
           this.parser = undefined;
+          console.log(`Destroying keepalive`);
+          clearInterval(this.keepAliveInterval);
         });
 
         this.serialPort.on("error", (err) => {
