@@ -274,7 +274,6 @@ const serialPortClosedHandler = () => {};
 export class LGTV {
   serialPort: SerialPort | undefined;
   parser: ReadlineParser | undefined;
-  retryInterval: NodeJS.Timer | undefined = undefined;
   keepAliveInterval: NodeJS.Timer | undefined = undefined;
   queue: Queue;
   path: string;
@@ -282,11 +281,6 @@ export class LGTV {
   constructor(path: string) {
     this.path = path;
     this.setupSerialPort();
-    this.retryInterval = setInterval(
-      this.setupSerialPort.bind(this),
-      RETRY_OPEN_INTERVAL
-    );
-
     this.queue = new Queue(MAX_CONCURRENT, MAX_QUEUE);
   }
 
@@ -316,6 +310,8 @@ export class LGTV {
           this.parser = undefined;
           console.log(`Destroying keepalive`);
           clearInterval(this.keepAliveInterval);
+
+          throw new Error("Serial port closed, exiting app");
         });
 
         this.serialPort.on("error", (err) => {
